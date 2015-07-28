@@ -1,0 +1,109 @@
+﻿<?xml version="1.0" encoding="utf-8"?>
+<TcPlcObject Version="1.1.0.1" ProductVersion="3.1.0.38">
+  <POU Name="HexStringToReal" Id="{c66e73db-67a1-43dd-8dc0-d951b42e247b}" SpecialFunc="None">
+    <Declaration><![CDATA[FUNCTION_BLOCK HexStringToReal
+VAR_INPUT
+	str :STRING;
+END_VAR
+VAR_OUTPUT
+	out : REAL;
+END_VAR
+VAR
+holdStr : STRING := '';
+binStr : STRING := '';
+bin : STRING := '';	
+sExponent : INT := 1;
+expVal : INT;
+sMantissa : STRING;
+i :INT :=0;
+ar : ARRAY[0..23] OF STRING;
+significand : REAL;
+decVal : REAL ;
+END_VAR
+]]></Declaration>
+    <Implementation>
+      <ST><![CDATA[//converts the hex string to binary
+FOR i :=1 TO 8 BY 1 DO
+	holdStr := MID(str,1,i);
+	
+	IF holdStr = '0' THEN
+		bin := '0000';
+	ELSIF holdStr = '1' THEN
+		bin := '0001';
+	ELSIF holdStr = '2' THEN
+		bin := '0010';
+	ELSIF holdStr = '3' THEN
+		bin := '0011';
+	ELSIF holdStr = '4' THEN
+		bin := '0100';
+	ELSIF holdStr = '5' THEN
+		bin := '0101';
+	ELSIF holdStr = '6' THEN
+		bin := '0110';
+	ELSIF holdStr = '7' THEN
+		bin := '0111';
+	ELSIF holdStr = '8' THEN
+		bin := '1000';
+	ELSIF holdStr = '9' THEN
+		bin := '1001';
+	ELSIF holdStr = 'A' THEN
+		bin := '1010';
+	ELSIF holdStr = 'B' THEN
+		bin := '1011';
+	ELSIF holdStr = 'C' THEN
+		bin := '1100';
+	ELSIF holdStr = 'D' THEN
+		bin := '1101';
+	ELSIF holdStr = 'E' THEN
+		bin := '1110';
+	ELSIF holdStr = 'F' THEN
+		bin := '1111';
+	END_IF
+	
+	binStr := CONCAT(binStr,bin);
+		
+END_FOR
+
+//takes half of the string
+binStr := RIGHT(binStr,32);
+
+//gets rid of the sign bit bc i am assuming that it is always positive
+binStr := DELETE(binStr,1,1);
+
+//convert the first 8 bits to get the exponent value and subtract 27
+sExponent := STRING_TO_INT(CONCAT('2#',LEFT(binStr,8))) - 127;
+
+//get remaining 23 mantissa bits
+sMantissa := MID(binStr,23,9);
+
+//values to divide by
+decVal := 0.5;
+
+//mantissa value
+significand := 0;
+
+//store mantissa bits in array
+FOR i := 0 TO 23 BY 1 DO
+	ar[i] := MID(sMantissa,1,i);
+END_FOR
+
+//get the significand by multiplying current bit by decVal then halve the decVal
+FOR i:= 1 TO 23 BY 1 DO
+	significand := significand + (STRING_TO_INT(ar[i])*decVal);
+	decVal := decVal/2;
+END_FOR
+
+//manually generate the power of 2
+expVal := 2;
+FOR i:= 0 TO sExponent-2 BY 1 DO
+	expVal := 2*expVal;
+END_FOR
+
+//make the output equal to the fp number which is calculated by multiplying
+//the exponent by the significand + 1
+out := (significand +1) * (expVal);
+RETURN;
+]]></ST>
+    </Implementation>
+  </POU>
+</TcPlcObject>

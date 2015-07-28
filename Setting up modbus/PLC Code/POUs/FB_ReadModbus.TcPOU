@@ -1,0 +1,78 @@
+﻿<?xml version="1.0" encoding="utf-8"?>
+<TcPlcObject Version="1.1.0.1" ProductVersion="3.1.0.38">
+  <POU Name="FB_ReadModbus" Id="{29708a2f-ce2d-4630-90d9-e2bd7d0b969c}" SpecialFunc="None">
+    <Declaration><![CDATA[FUNCTION_BLOCK FB_ReadModbus
+VAR_INPUT
+	
+inputData : ARRAY[0..1] OF MODBUS_DATA_MAP;
+intervalToSampleData : TIME := T#5S; //modbus update rate (lower rate = more disk usage) default : 5 seconds
+fileName: STRING := 'data';//changinng this will change the file otherwise it will overwrite the data : default 'data'
+
+END_VAR
+VAR_OUTPUT
+	outputData : ARRAY[0..1] OF REAL;
+END_VAR
+VAR
+	
+mb1 : FB_ModbusPoll; //first poller
+mb2 : FB_ModbusPoll; // second  poller
+
+bex : BOOL; //delay bit
+rex : BOOL;	//other delay bit
+
+dataWriter : FB_CSV_Writer; //fb that writes data to a csv file 
+
+timer  : TON; //timer to coordinate when to write to the file (basically the update rate of the modbus server)
+
+exBit : BOOL := TRUE; //excute bit for the timer
+
+numberOfReadingsTaken : INT;//holds how many readings have been taken from initial download
+
+END_VAR
+]]></Declaration>
+    <Implementation>
+      <ST><![CDATA[mb1.ipAd := inputData[0]._ipAddress;
+mb1.startAddr := inputData[0]._startAddress;
+mb2.ipAd := inputData[1]._ipAddress;
+mb2.startAddr := inputData[1]._startAddress;
+
+
+//5 second timeout
+timer.PT := intervalToSampleData;
+
+IF bex THEN
+	mb1(value => outputData[0]);
+ELSE
+	mb2(value => outputData[1]);
+END_IF
+
+//some bit delays
+IF NOT bex THEN
+	bex := NOT bex;
+ELSE 
+	bex := rex;
+END_IF
+
+rex := NOT rex;
+
+//timer starts when execute bit is true
+timer(in:= exBit);
+
+//if it is running write false
+IF NOT timer.Q THEN
+	//start timer
+	exBit := TRUE;
+	//falseify the write line	
+	dataWriter(bWriteLine := FALSE, sFileName := fileName , fDataPoint1 := outputData[0] , fDataPoint2 := outputData[1]);
+ELSE	
+	//reset the bit to reset the timer
+	exBit := FALSE;	
+	//write the data
+	dataWriter(bWriteLine := TRUE, sFileName := fileName , fDataPoint1 := outputData[0] , fDataPoint2 := outputData[1]);
+	//bump up the readings
+	numberOfReadingsTaken:=numberOfReadingsTaken+1;
+END_IF
+]]></ST>
+    </Implementation>
+  </POU>
+</TcPlcObject>

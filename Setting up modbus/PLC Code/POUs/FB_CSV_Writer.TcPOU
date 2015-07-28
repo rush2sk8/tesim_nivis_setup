@@ -1,0 +1,84 @@
+﻿<?xml version="1.0" encoding="utf-8"?>
+<TcPlcObject Version="1.1.0.1" ProductVersion="3.1.0.38">
+  <POU Name="FB_CSV_Writer" Id="{de3ffce5-7103-4107-8fe5-2fdaccc4c976}" SpecialFunc="None">
+    <Declaration><![CDATA[FUNCTION_BLOCK FB_CSV_Writer //Matt
+VAR_INPUT
+	bWriteLine:	BOOL; //true if you want to write to the file
+	sFileName:	STRING; //name of the file to write
+	fDataPoint1:	REAL; //data point 1
+	fDataPoint2:	REAL; //data point 2
+END_VAR
+VAR_OUTPUT
+	bBusy:	BOOL;
+	bError:	BOOL;
+	sError:	STRING;
+END_VAR
+VAR
+	fbFileOpen:	FB_FileOpen; //fb to open the file to begin appending
+	fbFilePuts:	FB_FilePuts; //fb to write to the file
+	fbFileClose: FB_FileClose; // closes the file
+	
+	rtWrite:	R_TRIG; //trigger
+	
+	nState:	INT; //state to cycle to parts of appending
+	sTempPathName:	STRING; 
+	sDataString:	STRING; //string to write
+END_VAR
+]]></Declaration>
+    <Implementation>
+      <ST><![CDATA[rtWrite(CLK := bWriteLine);
+
+CASE nState OF
+	0:	(*IDLE*)
+		bBusy := FALSE;
+		IF rtWrite.Q THEN
+			sTempPathName := CONCAT(CONCAT('C:\Temp\',sFileName),'.csv');
+			sDataString := CONCAT(CONCAT(CONCAT(REAL_TO_STRING(fDataPoint1),','),REAL_TO_STRING(fDataPoint2)),'$N'); 
+			bBusy := TRUE;
+			bError := FALSE;
+			sError := '';
+			nState := nState + 10;
+		END_IF		
+	
+	10:	(*Open File*)	
+		fbFileOpen(	sPathName := sTempPathName,nMode := FOPEN_MODEAPPEND,bExecute := TRUE,tTimeOut := T#1S);
+		IF NOT fbFileOpen.bBusy THEN
+			fbFileOpen(	bExecute := FALSE);
+			IF fbFileOpen.bError THEN
+				bError := TRUE;
+				sError := 'Could Not Open File';
+				nState := 0;
+			ELSE
+				nState := nState + 10;
+			END_IF
+		END_IF
+		
+	20:	(*Write Line To File*)
+		fbFilePuts(	hFile := fbFileOpen.hFile,sLine := sDataString,bExecute := TRUE,tTimeout := T#1S);
+		IF NOT fbFilePuts.bBusy THEN
+			fbFilePuts(	bExecute := FALSE);
+			IF fbFilePuts.bError THEN
+				bError := TRUE;
+				sError := 'Could not write to file';
+				nState := nState + 10;
+			ELSE
+				nState := nState + 10;
+			END_IF
+		END_IF
+		
+	30:	(*Close File*)
+		fbFileClose(hFile := fbFileOpen.hFile,bExecute := TRUE,tTimeout := T#1S);
+		IF NOT fbFileClose.bBusy THEN
+			fbFileClose(	bExecute := FALSE);
+			IF fbFileClose.bError THEN
+				bError := TRUE;
+				sError := 'Could not close file';
+				nState := 0;
+			ELSE
+				nState := 0;
+			END_IF
+		END_IF
+END_CASE]]></ST>
+    </Implementation>
+  </POU>
+</TcPlcObject>

@@ -1,0 +1,12 @@
+﻿<?xml version="1.0" encoding="utf-8"?>
+<TcPlcObject Version="1.1.0.1" ProductVersion="3.1.0.38">
+  <DUT Name="MODBUS_DATA_MAP" Id="{0f7a0a22-8f1c-4cd5-bf22-578fc121e6c0}">
+    <Declaration><![CDATA[TYPE MODBUS_DATA_MAP :
+STRUCT
+	_ipAddress : STRING;
+	_startAddress : WORD;
+END_STRUCT
+END_TYPE
+]]></Declaration>
+  </DUT>
+</TcPlcObject>

@@ -1,0 +1,45 @@
+﻿<?xml version="1.0" encoding="utf-8"?>
+<TcPlcObject Version="1.1.0.1" ProductVersion="3.1.0.38">
+  <POU Name="FB_ModbusPoll" Id="{5c9fc36d-805a-483b-9b35-a817f443a172}" SpecialFunc="None">
+    <Declaration><![CDATA[FUNCTION_BLOCK FB_ModbusPoll
+
+VAR_INPUT
+	ipAd : STRING; // the ip address of the modbus server
+	startAddr : WORD; // the start address
+END_VAR
+
+VAR_OUTPUT
+	value : REAL; //the modbus data
+END_VAR
+
+VAR
+	dataStr :STRING;
+	bModbusTick : BOOL;
+	fbReadRegs : FB_MBReadInputRegs;
+	converter : HexStringToReal;
+	arr : ARRAY [0..2] OF WORD;
+END_VAR
+]]></Declaration>
+    <Implementation>
+      <ST><![CDATA[//setup the modbus block
+fbReadRegs.sIPAddr := ipAd; //gateway ip
+fbReadRegs.nTCPPort := MODBUS_TCP_PORT; //502
+fbReadRegs.nUnitID := 16#FF; //255
+fbReadRegs.nQuantity := 3; //3 words
+fbReadRegs.tTimeout := T#5S; //30 sec timout
+fbReadRegs.nMBAddr := startAddr;
+fbReadRegs.cbLength := 6;//nq*2
+fbReadRegs.pDestAddr := ADR(arr); //the pointer to the array
+
+//the rising edge of the input negate the tick to create  a rising input of change :)
+fbReadRegs.bExecute := (bModbusTick := NOT bModbusTick); 
+
+//uppercase(convert first number to hex + convert second number to hex)
+dataStr := F_TOUCase(CONCAT(WORD_TO_HEXSTR(arr[1],4,TRUE),WORD_TO_HEXSTR(arr[2],4,TRUE))); 
+fbReadRegs();
+
+//use converter to convert last 2 words to a fp value
+converter(str := dataStr, out => value);]]></ST>
+    </Implementation>
+  </POU>
+</TcPlcObject>

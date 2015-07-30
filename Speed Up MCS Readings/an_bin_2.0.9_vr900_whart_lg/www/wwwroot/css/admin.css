@@ -1,0 +1,21 @@
+#em {
+	width:25%;
+	font-family:Verdana,Arial,Helvetica,sans-serif;
+}
+.nice {
+	background-color:FFFFFF;
+	color:#1D374F;
+	font-family:Verdana,Arial,Helvetica,sans-serif;
+	width:3em;
+	height:1.1em;
+	display:inline;
+}
+.button {
+	width:15em ;
+}
+.frm
+{
+    margin: 0px; padding: 0px;
+}
+.buttons {
+}

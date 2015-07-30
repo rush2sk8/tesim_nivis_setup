@@ -1,0 +1,118 @@
+########################## start file ##################################
+
+[ACCESS_POINT]
+    RAW_LOG=no
+
+[WH_GATEWAY]
+	GW_REQUEST_SERVICE = 0
+
+[MODBUS]
+    PUBLISHERS_FILE = /access_node/profile/Monitor_Host_Publishers.conf
+
+[NETWORK_MANAGER]        
+    # The number of initial links number on transceiver.    
+    TRANSCEIVER_ADVERTISE_LINKS_NO = 8
+    
+        JOIN_BANDWIDTH = 4
+    
+    # The max number of joins 
+    MAX_JOINS_PER_DEVICE = 3		
+    MAX_JOINS_PER_AP = 40
+    
+    KEEP_ALIVE_PERIOD = 30    
+    
+    REROUTE_ONLY_ON_FAIL = 0
+    
+    # When set to true the AP links fragmentation will be reduced to minimum; default is false.
+    ENABLE_AP_BEST_FIT_ALLOCATION = true
+        
+    # The join of a device will be delayed until all the operations having it as the owner confirms.     
+	DEVICE_JOIN_AFTER_ALL_OPERATIONS_CONFIRMS = true
+	
+	MAX_NEIGHBORS_TO_EVALUATE = 10
+	
+	PERCENT_TRAFFIC_OVERALLOC = 25
+	
+	GRAPH_ROUTING_ALGORITHM = Graph Routing With Min Path
+	
+	GENERATE_NICKNAMES_FROM_EUI64 = false
+	
+[MONITOR_HOST_WH]
+    #Location of publishers file
+    PubConfigPath = /access_node/profile/Monitor_Host_Publishers.conf
+
+    #Location of sqlite3 database file
+    #DatabasePath=/tmp/Monitor_Host.db3
+
+    #The default timeout for DB operations. In seconds.
+    #DatabaseTimeout=40
+
+    #How often the database is cleaned up. (in minutes).0 value means the database is cleaned up only at startup.
+    #DatabaseVacuumPeriodMinutes=0
+
+    #How often the database is checked for old entries. (in minutes). 0 value means the entries will never be removed.
+    DatabaseRemoveEntriesCheckPeriod=30
+
+    #Entries older than this value will be removed. (in minutes)
+    #DatabaseRemoveEntriesOlderThanMinutes=30
+
+    #Total number of accepted entries in Alarms and Commands tables.
+    #DatabaseRemoveEntriesMoreThanMaxCount=1000
+
+    #Gateway host ip
+    GatewayHost=127.0.0.1
+
+    #Gateway listen port
+    #GatewayPort=10200
+
+    #Local port
+    #LocalPort=9000
+
+    #to stop sending the same requests on notification while there is one in progress on device
+    #AllowSameCmdOnDev=0
+
+    #How often the database is checked for new commands. (in seconds).
+    #CommandsCheckPeriod=2
+
+    #Period (in seconds) at which a command is considered timeouted
+    #CommandsTimeout=180
+
+    #Period (in seconds) for checking new publishers.
+    #PublishConfigCheckPeriod=10
+
+    #Minimum tolerance threshold for deciding whether a burst was received or missed
+    #PublishPeriodToleranceThreshold=8
+
+    #In seconds; =0 disable caching and >0 enables caching of (burst)reports: 779,780,783,784,785,787,788,789,790,791,800,801,802,803,833,834,965,966,967,968,969,970,973,974,975,976,977
+    #ReportsCacheFlushPeriod=0
+
+    #How often is setting the burst configuration retried after it fails
+    #BurstSetConfigRetryPeriod=1800
+    #BurstSetConfigShortDelayRetries=3
+
+    #Period (in seconds) at which the readings are committed to the database.
+    #ReadingsSavePeriod=10
+
+    #Maximum number of readings for a transaction.
+    #MaxReadingsNoPerTransaction=200
+
+    #Period (in seconds) at which the log of publishing configuration is saved in DB. (in seconds)
+    #SetPublishersLogUpdatePeriod=30
+
+    # log file name
+    FileName = MonitorHost-wh
+
+    # app log level: 4 dbg, 3 inf, 2 warn, 1 err
+    LogLevel_APP = 3
+
+    # app log level: 4 dbg, 3 inf, 2 warn, 1 err
+    #LogLevel_STACK = 2
+
+    #log file size in bytes
+    LogFileMaxSize = 1024000
+
+    #enable log archive - 1 enabled, !=1 disabled
+    #EnableLogArchive = 0
+
+
+###################################### end of file ##########################

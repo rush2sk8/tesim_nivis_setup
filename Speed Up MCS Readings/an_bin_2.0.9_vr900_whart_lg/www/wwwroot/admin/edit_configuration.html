@@ -1,0 +1,384 @@
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Strict//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-strict.dtd">
+
+<html>
+<head>
+  <meta http-equiv="content-type" content= "text/html; charset=us-ascii" />
+  <!--meta http-equiv="X-UA-Compatible" content="IE=EmulateIE7" /-->
+  
+  <link href="css/default.css" rel="stylesheet" type="text/css" />
+  <script type="text/javascript" src="../jsolait/jsolait.js"> </script>
+  <script type="text/javascript" src="config.js"></script>
+
+  <script type="text/javascript" >
+		//contains all the config file content, populated once on load, and after new variable addition or variable edit
+		var CONFIG;
+
+		//used for reloading CONFIG after a new variable is added
+		var customVariableAdded = false;
+
+		function ReadConfig()
+		{
+			try
+			{
+				var service = new jsonrpc.ServiceProxy(serviceURL, methods);
+		 
+				CONFIG = service.config.getConfig({});
+			}
+			catch(e)
+			{
+				HandleException(e, "Unexpected error reading config !");
+			}
+		}
+
+		function PopulateSections()
+		{
+			var ddlSection = document.getElementById("ddlSection");
+			
+			for(i = 0;i < CONFIG.length; i++)
+			{
+				ddlSection.options[i] = new Option(CONFIG[i].group,CONFIG[i].group);
+			}
+		}
+
+		function ClearVariables()   //TODO ??
+		{
+		   var txtValue = document.getElementById("txtValue");
+		   var lst = document.getElementById("ddlVariable");
+		   
+		   for (i = lst.length; i >= 0; i--) 
+		   {
+			  lst[i] = null;
+		   }
+		   
+		   txtValue.value = "";
+		}
+
+		function PopulateVariableValue()    //TODO optimize ??
+		{
+			var txtSection = document.getElementById("txtSection");
+			if (txtSection.style.display == "none") //standard mode
+			{
+				var ddlSection = document.getElementById("ddlSection");
+				var ddlVariable = document.getElementById("ddlVariable");    
+				var txtValue = document.getElementById("txtValue");
+			
+				//find current group
+				var sectionPos = 0;
+			
+				for(i = 0;i < CONFIG.length; i++)
+				{
+					if(CONFIG[i].group == ddlSection.value)
+					{
+						sectionPos = i;
+						break;
+					}
+				}
+
+				for (i = 0; i < CONFIG[sectionPos].variables.length; i++)
+				{
+					for (var variable in CONFIG[sectionPos].variables[i])
+					{
+						if (ddlVariable.value == variable)
+						{
+							txtValue.value = CONFIG[sectionPos].variables[i][variable];
+						}
+					}
+				}
+			}
+		}
+
+		function PopulateVariables()
+		{
+			ClearVariables();
+			
+			var ddlSection = document.getElementById("ddlSection");
+			var ddlVariable = document.getElementById("ddlVariable");
+			
+			//find current group
+			var sectionPos = 0;
+			
+			for(i = 0;i < CONFIG.length; i++)
+			{
+				if(CONFIG[i].group == ddlSection.value)
+				{
+					sectionPos = i;
+					break;
+				}
+			}
+
+			for (i = 0; i < CONFIG[sectionPos].variables.length; i++)
+			{
+				for (var variable in CONFIG[sectionPos].variables[i])
+				{
+					ddlVariable.options[i] = new Option(variable, variable);
+				}
+			} 
+			
+			PopulateVariableValue();
+		}
+
+		function DisplayOperationResultForControl(controlName, msg)
+		{
+			var control = document.getElementById(controlName);
+			control.className = "opResultGreen";
+			control.innerHTML = msg;
+		}
+
+		function ClearOperationResultForControl(controlName)
+		{
+			DisplayOperationResultForControl(controlName, "");
+		}
+
+		function ClearOperationResults()
+		{
+			ClearOperationResultForControl("spnSetResult");
+			ClearOperationResultForControl("spnOperationResult");
+		}
+
+		function VariableTypeChanged(type)
+		{
+			ClearOperationResults();
+			
+			var ddlSection = document.getElementById("ddlSection");
+			var ddlVariable = document.getElementById("ddlVariable");
+			var txtSection = document.getElementById("txtSection");
+			var txtVariable = document.getElementById("txtVariable");
+			
+			var txtValue = document.getElementById("txtValue");
+			
+			txtSection.value = txtVariable.value = txtValue.value = "";
+			
+			if (type == '1')
+			{
+				ddlSection.style.display = "inline";
+				ddlVariable.style.display = "inline";
+				txtSection.style.display = "none";
+				txtVariable.style.display = "none";
+			   
+				txtValue.focus();
+				
+				if (customVariableAdded)    //reload CONFIG after adding custom variable(s)
+				{
+					customVariableAdded = false;
+					ReadConfig();
+					PopulateSections();
+					PopulateVariables();
+				}
+				PopulateVariableValue();
+			}
+			else
+			{
+				ddlSection.style.display = "none";
+				ddlVariable.style.display = "none";
+				txtSection.style.display = "inline";
+				txtVariable.style.display = "inline";
+				
+				txtSection.focus();
+			}
+		}
+
+		function ValidateRequired(control, fieldName)
+		{
+			if (control.value == null || control.value == "") 
+			{
+				alert("Field '" + fieldName + "' is required !");
+				control.focus();        
+				return false;
+			}
+			return true;
+		}
+
+		//SECTIONS/VARIABLES
+
+		function SetVariable()
+		{
+			ClearOperationResults();
+			
+			//
+			{
+				var txtSection = document.getElementById("txtSection");
+				var txtVariable = document.getElementById("txtVariable");
+				
+				var isCustomVariable = (txtSection.style.display == "inline") && (txtVariable.style.display == "inline");
+				
+				var section = document.getElementById("ddlSection");
+				var variable = document.getElementById("ddlVariable");	
+				
+				//custom variable validation
+				if (isCustomVariable)
+				{
+					if(!ValidateRequired(txtSection, "Section"))
+					{
+						return;
+					}
+					if(!ValidateRequired(txtVariable, "Variable"))
+					{
+						return;
+					}       
+				}
+				
+				var val = document.getElementById("txtValue");
+			
+				if(!ValidateRequired(val, "Value"))
+				{
+					return;
+				}
+				
+				var saveFailed = false;
+			
+				try
+				{
+					var service = new jsonrpc.ServiceProxy(serviceURL, methods);
+				
+					if (isCustomVariable)
+					{
+						if(!service.config.setVariable({group : txtSection.value, varName : txtVariable.value, varValue: val.value}))
+						{
+							alert ("Error saving variable !");
+							saveFailed = true;
+						}
+						else //save is ok
+						{
+							customVariableAdded = true;
+						}
+					}
+					else
+					{
+						if (!service.config.setVariable({group : section.value, varName : variable.value, varValue: val.value}))
+						{
+							alert ("Error saving variable !");
+							saveFailed = true;
+						}
+					}
+				}
+				catch(e)
+				{
+				   HandleException(e, "Unexpected error saving value !");
+				   return;
+				}
+
+				ReadConfig();
+				ResetSectionsVariables();
+				
+				if (!saveFailed)
+				{
+					DisplayOperationResultForControl("spnSetResult", "Set variable completed successfully.");            
+				}    				
+			}
+		}
+
+		function ResetSectionsVariables()
+		{
+			ClearOperationResults();
+			//ma=ybe later, selectedindex = 0 ...
+			//var section = document.getElementById("lstSection");
+			//document.getElementById("txtVariable").value = "";	
+			
+			var txtVal = document.getElementById("txtValue");
+			txtVal.value = "";   
+			
+			var txtSection = document.getElementById("txtSection");
+			
+			if (txtSection.style.display == "inline")  //custom mode
+			{
+				document.getElementById("txtVariable").value = "";
+				
+				txtSection.value = "";
+				txtSection.focus();        
+			}
+			else    //standard mode
+			{
+				PopulateVariableValue();
+				txtVal.focus();
+			}		
+		}
+
+		function InitPage()
+		{
+				SetPageCommonElements();
+				InitJSON();
+			
+				ReadConfig();
+				if(CONFIG != null)
+				{
+					PopulateSections();
+					PopulateVariables();
+				}
+		}
+</script>
+</head>
+
+<body onload="InitPage()">
+<div id="outer">
+<div id="inner">
+<div id="header"></div>
+<div id="content">
+<div id="columnB"></div>
+<div id="columnA">
+
+	<h3>Advanced Settings</h3>
+	<hr>
+
+    <table cellpadding="0" cellspacing="5"  border="0" width="100%">
+		<tr>
+			<td align="left" style="width:125px">Variable type</td>			
+			<td>
+				<input id="rbVariableTypeStandard" type="radio" name="rbVariableType" value="1" onclick="VariableTypeChanged('1');" checked="checked" />Standard 
+				<input id="rbVariableTypeCustom"   type="radio" name="rbVariableType" value="2" onclick="VariableTypeChanged('2');" />Custom			
+			</td>
+        </tr>
+
+        <tr>
+            <td align="left">Section</td>
+			<td>			
+				<select id="ddlSection" name="ddlSection" onchange="PopulateVariables();" style="width: 336px;"></select>
+				<input id="txtSection" type="text" name="txtSection" maxlength="50" style="display: none; width: 330px;" />
+			</td>	
+        </tr>
+
+        <tr>
+            <td align="left">Variable</td>
+			<td>
+				<select id="ddlVariable" name="ddlVariable" onchange="PopulateVariableValue();" style="width: 336px;"> </select> 
+				<input id="txtVariable" type="text" name="txtVariable" maxlength="50" style="width: 330px; display: none;" />
+			</td>		
+        </tr>
+
+        <tr>
+            <td align="left">Value</td>
+			<td>
+				<input type="text" id="txtValue" name="txtValue" maxlength="50" style="width: 330px;" />
+			</td>
+        </tr>
+
+		<tr>
+			<td colspan="2">
+			<table width="100%" cellpadding="0" cellspacing= "0">
+			  <tr>
+				<td colspan='2' align='center'>
+					<input id="btnSetVariable" type="button" name="btnSetVariable" value='Set' class="buttonFilter " onclick="SetVariable();"/> 
+					<input id="btnCancel" type="button" name="btnCancel" value='Cancel' class="buttonFilter " onclick="ResetSectionsVariables();"/>
+				</td>
+			  </tr>
+			</table>
+			</td>
+		</tr>
+
+        <tr>
+            <td colspan="2" align="center"><span id="spnSetResult"></span></td>
+        </tr>
+
+        <tr>
+            <td colspan="2" align="center"><span id="spnOperationResult"></span></td>
+        </tr>
+    </table>
+
+	<hr>	
+			  
+</div>
+</div> 
+</div>
+</div>
+<div id="footer"></div>
+</body>
+</html>

@@ -1,0 +1,64 @@
+#!/bin/sh
+
+cd /access_node/firmware
+
+if [ -f common.sh ]; then
+	. common.sh
+	VerifyConsistentHwVer || exit 1
+fi
+
+# log this after get time
+log2flash "***** AN POWER ON: uptime=`cat /proc/uptime | cut -f1 -d ' '`s"
+
+[ -f /access_node/etc/cp_without_ids ] && set_usb_ttys.sh
+
+#sudden reboot troubleshoot - START
+echo 1 > /proc/sys/vm/oom_dump_tasks
+echo 1 > /proc/sys/vm/oom_kill_allocating_task
+echo 1 > /proc/sys/vm/overcommit_ratio
+echo 0 > /proc/sys/vm/overcommit_memory
+echo "256 1" > /proc/sys/vm/lowmem_reserve_ratio
+echo 2048 > /proc/sys/vm/min_free_kbytes
+echo 100  > /proc/sys/vm/max_map_count
+#sudden reboot troubleshoot - END
+
+# Tell the kernel we have no swap
+# 0-100: The higher a number set here, the more the system will swap.
+echo 0 > /proc/sys/vm/swappiness
+
+#conf Ipv4 TCP timeouts
+echo 5  > /proc/sys/net/ipv4/tcp_keepalive_time
+echo 10 > /proc/sys/net/ipv4/tcp_keepalive_intvl
+echo 9  > /proc/sys/net/ipv4/tcp_keepalive_probes
+echo 11 > /proc/sys/net/ipv4/tcp_retries2
+
+[ -f /etc/config/vpn_client ] && openvpn --config /access_node/activity_files/openvpn/client.config --script-security 2 &
+
+date # log current date on serial console; mark start reading from ntp time servers
+ntpadjust.sh affect_ntpd
+sleep 5
+
+echo "---DATE---"
+date	# log current date on serial console
+echo ""
+
+#if [ `devmem 0xf000082c 32 | cut -c 8` -eq 1 ]; then
+# remove comment after Dan confirms the reset to default jumper actually works on RevC
+#    log2flash "RESET network settings to default"
+#    ini_editor -f /etc/rc.d/rc.net.info -v ETH0_IP   -w "192.168.0.101"	#TAKE CARE: same settings in board_setup.sh
+#    ini_editor -f /etc/rc.d/rc.net.info -v ETH0_MASK -w "255.255.255.0"
+#    ini_editor -f /etc/rc.d/rc.net.info -v ETH0_GW   -w "192.168.0.1"
+#fi
+
+if [ -f start.sh ]; then
+	start.sh no_stop
+	echo "Starting discovery&"
+	/access_node/firmware/discovery&
+	echo "---DATE---"
+	date
+else
+	echo "PANIC Nivis apps NOT found, nothing to run..."
+	echo "Starting a shell just for debugging."
+	echo "Do not forget to reboot afterwards."
+	/bin/sh;
+fi

@@ -1,0 +1,424 @@
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Strict//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-strict.dtd">
+
+<html>
+<head>
+	<link href="css/default.css" rel="stylesheet" type="text/css" />
+	<script type="text/javascript" src="../jsolait/jsolait.js"> </script>
+	<script type="text/javascript" src="config.js"></script>
+
+	<script type="text/javascript">
+		var ArrayCountry={ "0":"0",
+		"289":"ge", "412":"af", "276":"al", "603":"dz", "544":"as", "213":"ad", "631":"ao", "365":"ai", "344":"ag", "722":"ar", "283":"am", "363":"aw", "505":"au", "232":"at", "400":"az",
+		"364":"bs", "426":"bh", "470":"bd", "342":"bb", "257":"by", "206":"be", "702":"bz", "616":"bj", "350":"bm", "402":"bt", "736":"bo", "218":"ba", "652":"bw", "724":"br",
+		"348":"vg", "528":"bn", "284":"bg", "613":"bf", "642":"bi", "456":"kh", "624":"cm", "302":"ca", "625":"cv", "346":"ky", "623":"cf", "622":"td", "730":"cl", "460":"cn", 
+		"732":"co", "654":"km", "629":"cg", "548":"ck", "712":"cr", "612":"ci", "219":"hr", "368":"cu", "280":"cy", "230":"cz", "630":"cd", "238":"dk", "638":"dj", "366":"dm",
+		"370":"do", "514":"tl", "740":"ec", "602":"eg", "706":"sv", "627":"gq", "657":"er", "248":"ee", "636":"et", "750":"fk", "288":"fo", "542":"fj", "244":"fi", "208":"fr",
+		"742":"gf", "547":"pf", "628":"ga", "607":"gm", "282":"ge", "262":"de", "620":"gh", "266":"gi", "202":"gr", "290":"gl", "352":"gd", "340":"gp", "535":"gu", "704":"gt",
+		"611":"gn", "632":"gw", "738":"gy", "372":"ht", "708":"hn", "454":"hk", "216":"hu", "274":"is", "404":"in", "405":"in", "510":"id", "432":"ir", "418":"iq", "272":"ie",
+		"425":"il", "222":"it", "338":"jm", "441":"jp", "440":"jp", "416":"jo", "401":"kz", "639":"ke", "545":"ki", "467":"kp", "450":"kr", "419":"kw", "437":"kg", "457":"la",
+		"247":"lv", "415":"lb", "651":"ls", "618":"lr", "606":"ly", "295":"li", "246":"lt", "270":"lu", "455":"mo", "294":"mk", "646":"mg", "650":"mw", "502":"my", "472":"mv",
+		"610":"ml", "278":"mt", "551":"mh", "340":"mq", "609":"mr", "617":"mu", "334":"mx", "550":"fm", "259":"md", "212":"mc", "428":"mn", "297":"me", "354":"ms", "604":"ma",
+		"643":"mz", "414":"mm", "649":"na", "536":"nr", "429":"np", "204":"nl", "362":"an", "546":"nc", "530":"nz", "710":"ni", "614":"ne", "621":"ng", "534":"mp", "242":"no",
+		"422":"om", "410":"pk", "552":"pw", "423":"ps", "714":"pa", "537":"pg", "744":"py", "716":"pe", "515":"ph", "260":"pl", "268":"pt", "330":"pr", "427":"qa", "647":"re",
+		"226":"ro", "250":"ru", "635":"rw", "356":"kn", "358":"lc", "308":"pm", "360":"vc", "549":"ws", "292":"sm", "626":"st", "420":"sa", "608":"sn", "220":"rs", "633":"sc",
+		"619":"sl", "525":"sg", "231":"sk", "293":"si", "540":"sb", "637":"so", "655":"za", "214":"es", "413":"lk", "634":"sd", "746":"sr", "653":"sz", "240":"se", "228":"ch",
+		"417":"sy", "466":"tw", "436":"tj", "640":"tz", "520":"th", "615":"tg", "539":"to", "374":"tt", "605":"tn", "286":"tr", "438":"tm", "376":"tc", "641":"ug", "255":"ua",
+		"424":"ae", "430":"ae", "431":"ae", "235":"gb", "234":"gb", "310":"us", "311":"us", "312":"us", "313":"us", "314":"us", "315":"us", "316":"us", "332":"vi", "748":"uy",
+		"434":"uz", "541":"vu", "225":"va", "734":"ve", "452":"vn", "543":"wf", "421":"ye", "645":"zm", "648":"zw"};
+		
+		var setgetResult=null;
+		
+		function InitProviderInfo(){
+			SetPageCommonElements();
+			InitJSON();
+		}		
+
+		function AutoCompleteData(MCCId, MNCId, providerTagId, countryId, APNId, dialNoId, userId, passId)
+		{
+			//CompleteMCCField();
+			var RetVal=true;
+			try {
+				var v_MCC = document.getElementById(MCCId);
+				var v_MNC = document.getElementById(MNCId);
+				var v_providerTag = document.getElementById(providerTagId);
+				var v_country = document.getElementById(countryId);
+				var v_APN = document.getElementById(APNId);
+				var v_dialNo = document.getElementById(dialNoId);
+				var v_user = document.getElementById(userId);
+				var v_pass = document.getElementById(passId);
+				var service = new jsonrpc.ServiceProxy(serviceURL, methods);
+				var str_rsp = service.misc.getGprsProviderInfo( {MCC:v_MCC.value, MNC:v_MNC.value, providerTag:v_providerTag.value ,
+									APN:v_APN.value ,country:v_country.value, dialNo:v_dialNo.value , user:v_user.value, pass:v_pass.value });
+				
+				if (!str_rsp)
+				{
+					RetVal=false;
+				}
+				document.getElementById('providerTag').value = str_rsp['providerTag'];
+				document.getElementById('APN').value = str_rsp['APN'];
+				document.getElementById('country').value = str_rsp['country'];
+				document.getElementById('dialNo').value =  str_rsp['dialNo'];
+				document.getElementById('user').value =  str_rsp['user'];
+				document.getElementById('pass').value = str_rsp['pass'];
+			} catch(e) {
+				alert(e);
+				RetVal=false;
+			}
+			return RetVal;
+		}
+			
+		function SetProviderData(MCCId, MNCId, providerTagId, countryId, APNId, dialNoId, userId, passId  )
+		{
+			//CompleteMCCField();
+			var RetVal=true;
+			try {
+				var v_MCC = document.getElementById(MCCId);
+				var v_MNC = document.getElementById(MNCId);
+				var v_providerTag = document.getElementById(providerTagId);
+				var v_country = document.getElementById(countryId);
+				var v_APN = document.getElementById(APNId);
+				var v_dialNo = document.getElementById(dialNoId);
+				var v_user = document.getElementById(userId);
+				var v_pass = document.getElementById(passId);
+				var service = new jsonrpc.ServiceProxy(serviceURL, methods);
+				var retval= service.misc.setGprsProviderInfo( {MCC:v_MCC.value, MNC:v_MNC.value, providerTag:v_providerTag.value, APN:v_APN.value,
+										country:v_country.value, dialNo:v_dialNo.value , user:v_user.value, pass:v_pass.value });
+				if (!retval)
+				{
+					RetVal=false;
+				}
+			} catch(e) {
+				alert(e);
+				RetVal=false;
+			}
+			return RetVal;
+		}
+		
+		function CompleteMCCField()
+		{
+
+			var MCCval=document.getElementById('selectCountry').value;
+			if (MCCval=='0')
+			{
+				document.getElementById('MCC').value="";
+				document.getElementById('country').value="";
+				return;
+			}
+			document.getElementById('MCC').value=MCCval;
+			document.getElementById('country').value=ArrayCountry[MCCval];
+		}
+	</script>
+</head>
+	
+<body onload="InitProviderInfo()">	
+<div id="outer">
+<div id="inner">
+<div id="header"></div>
+<div id="content">
+<div id="columnB"></div>	
+<div id="columnA">
+
+	<h3>Provider Information</h3>	
+	<hr>
+
+	<table cellspacing=5>		
+	<tr>
+		<td>Country</td>
+		<td>	
+			<select id="selectCountry" onkeyup="CompleteMCCField();" onclick="CompleteMCCField();">
+				<option value="0">Select Contry</option>
+				<option value="289">Abkhazia (Georgia)</option>
+				<option value="412">Afghanistan</option>
+				<option value="276">Albania</option>
+				<option value="603">Algeria</option>
+				<option value="544">American Samoa (US)</option>
+				<option value="213">Andorra</option>
+				<option value="631">Angola</option>
+				<option value="365">Anguilla</option>
+				<option value="344">Antigua and Barbuda</option>
+				<option value="722">Argentine Republic</option>
+				<option value="283">Armenia</option>
+				<option value="363">Aruba (Netherlands)</option>
+				<option value="505">Australia</option>
+				<option value="232">Austria</option>
+				<option value="400">Azerbaijani Republic</option>
+				<option value="364">Bahamas</option>
+				<option value="426">Bahrain</option>
+				<option value="470">Bangladesh</option>
+				<option value="342">Barbados</option>
+				<option value="257">Belarus</option>
+				<option value="206">Belgium</option>
+				<option value="702">Belize</option>
+				<option value="616">Benin</option>
+				<option value="350">Bermuda (UK)</option>
+				<option value="402">Bhutan</option>
+				<option value="736">Bolivia</option>
+				<option value="218">Bosnia and Herzegovina</option>
+				<option value="652">Botswana</option>
+				<option value="724">Brazil</option>
+				<option value="348">British Virgin Islands (UK)</option>
+				<option value="528">Brunei Darussalam</option>
+				<option value="284">Bulgaria</option>
+				<option value="613">Burkina Faso</option>
+				<option value="642">Burundi</option>
+				<option value="456">Cambodia</option>
+				<option value="624">Cameroon</option>
+				<option value="302">Canada</option>
+				<option value="625">Cape Verde</option>
+				<option value="346">Cayman Islands (UK)</option>
+				<option value="623">Central African Republic</option>
+				<option value="622">Chad</option>
+				<option value="730">Chile</option>
+				<option value="460">China</option>
+				<option value="732">Colombia</option>
+				<option value="654">Comoros</option>
+				<option value="629">Republic of the Congo</option>
+				<option value="548">Cook Islands(NZ)</option>
+				<option value="712">Costa Rica</option>
+				<option value="612">Cote d'Ivoire</option>
+				<option value="219">Croatia</option>
+				<option value="368">Cuba</option>
+				<option value="280">Cyprus</option>
+				<option value="230">Czech Republic</option>
+				<option value="630">Democratic Republic of the Congo</option>
+				<option value="238">Denmark</option>
+				<option value="638">Djibouti</option>
+				<option value="366">Dominica</option>
+				<option value="370">Dominican Republic</option>
+				<option value="514">East Timor</option>
+				<option value="740">Ecuador</option>
+				<option value="602">Egypt</option>
+				<option value="706">El Salvador</option>
+				<option value="627">Equatorial Guinea</option>
+				<option value="657">Eritrea</option>
+				<option value="248">Estonia</option>
+				<option value="636">Ethiopia</option>
+				<option value="750">Falkland Islands (Malvinas)</option>
+				<option value="288">Faroe Islands (Denmark)</option>
+				<option value="542">Fiji </option>
+				<option value="244">Finland</option>
+				<option value="208">France </option>
+				<option value="742">French Guiana (France)</option>
+				<option value="547">French Polynesia (France)</option>
+				<option value="628">Gabonese Republic   </option>
+				<option value="607">Gambia</option>
+				<option value="282">Georgia</option>
+				<option value="262">Germany</option>
+				<option value="620">Ghana</option>
+				<option value="266">Gibraltar (UK)</option>
+				<option value="202">Greece</option>
+				<option value="290">Greenland (Denmark)</option>
+				<option value="352">Grenada</option>
+				<option value="340">Guadeloupe (France)</option>
+				<option value="535">Guam (US)</option>
+				<option value="704">Guatemala</option>
+				<option value="611">Guinea</option>
+				<option value="632">Guinea-Bissau</option>
+				<option value="738">Guyana</option>
+				<option value="372">Haiti</option>
+				<option value="708">Honduras </option>
+				<option value="454">Hong Kong (PRC)</option>
+				<option value="216">Hungary</option>
+				<option value="274">Iceland</option>
+				<option value="404">India (MCC:404)</option>
+				<option value="405">India (MCC:405)</option>
+				<option value="510">Indonesia</option>
+				<option value="432">Iran</option>
+				<option value="418">Iraq</option>
+				<option value="272">Ireland</option>
+				<option value="425">Israel</option>
+				<option value="222">Italy</option>
+				<option value="338">Jamaica</option>
+				<option value="441">Japan (MCC:441)</option>
+				<option value="440">Japan (MCC:440)</option>
+				<option value="416">Jordan</option>
+				<option value="401">Kazakhstan</option>
+				<option value="639">Kenya</option>
+				<option value="545">Kiribati</option>
+				<option value="467">Korea, North</option>
+				<option value="450">Korea, South</option>
+				<option value="419">Kuwait</option>
+				<option value="437">Kyrgyz Republic</option>
+				<option value="457">Laos</option>
+				<option value="247">Latvia</option>
+				<option value="415">Lebanon</option>
+				<option value="651">Lesotho</option>
+				<option value="618">Liberia</option>
+				<option value="606">Libya</option>
+				<option value="295">Liechtenstein</option>
+				<option value="246">Lithuania</option>
+				<option value="270">Luxembourg</option>
+				<option value="455">Macau (PRC)</option>
+				<option value="294">Republic of Macedonia</option>
+				<option value="646">Madagascar</option>
+				<option value="650">Malawi</option>
+				<option value="502">Malaysia</option>
+				<option value="472">Maldives</option>
+				<option value="610">Mali</option>
+				<option value="278">Malta</option>
+				<option value="551">Marshall Islands</option>
+				<option value="340">Martinique (France)</option>
+				<option value="609">Mauritania</option>
+				<option value="617">Mauritius</option>
+				<option value="334">Mexico</option>
+				<option value="550">Federated States of Micronesia</option>
+				<option value="259">Moldova</option>
+				<option value="212">Monaco</option>
+				<option value="428">Mongolia</option>
+				<option value="297">Montenegro (Republic of)</option>
+				<option value="354">Montserrat (UK)</option>
+				<option value="604">Morocco</option>
+				<option value="643">Mozambique</option>
+				<option value="414">Myanmar</option>
+				<option value="649">Namibia</option>
+				<option value="536">Nauru</option>
+				<option value="429">Nepal</option>
+				<option value="204">Netherlands</option>
+				<option value="362">Netherlands Antilles (Netherlands)</option>
+				<option value="546">New Caledonia (France)</option>
+				<option value="530">New Zealand</option>
+				<option value="710">Nicaragua</option>
+				<option value="614">Niger</option>
+				<option value="621">Nigeria</option>
+				<option value="534">Northern Mariana Islands (US)</option>
+				<option value="242">Norway</option>
+				<option value="422">Oman</option>
+				<option value="410">Pakistan</option>
+				<option value="552">Palau</option>
+				<option value="423">Palestine</option>
+				<option value="714">Panama</option>
+				<option value="537">Papua New Guinea</option>
+				<option value="744">Paraguay</option>
+				<option value="716">Peru</option>
+				<option value="515">Philippines</option>
+				<option value="260">Poland</option>
+				<option value="268">Portugal</option>
+				<option value="330">Puerto Rico (US)</option>
+				<option value="427">Qatar</option>
+				<option value="647">Reunion (France)</option>
+				<option value="226">Romania</option>
+				<option value="250">Russian Federation</option>
+				<option value="635">Rwandese Republic</option>
+				<option value="356">Saint Kitts and Nevis</option>
+				<option value="358">Saint Lucia</option>
+				<option value="308">Saint Pierre and Miquelon (France)</option>
+				<option value="360">Saint Vincent and the Grenadines</option>
+				<option value="549">Samoa</option>
+				<option value="292">San Marino</option>
+				<option value="626">Sao Tome and Prncipe</option>
+				<option value="420">Saudi Arabia</option>
+				<option value="608">Senegal</option>
+				<option value="220">Serbia (Republic of)</option>
+				<option value="633">Seychelles</option>
+				<option value="619">Sierra Leone</option>
+				<option value="525">Singapore</option>
+				<option value="231">Slovakia</option>
+				<option value="293">Slovenia</option>
+				<option value="540">Solomon Islands</option>
+				<option value="637">Somalia</option>
+				<option value="655">South Africa</option>
+				<option value="214">Spain</option>
+				<option value="413">Sri Lanka</option>
+				<option value="634">Sudan</option>
+				<option value="746">Suriname</option>
+				<option value="653">Swaziland</option>
+				<option value="240">Sweden</option>
+				<option value="228">Switzerland</option>
+				<option value="417">Syria</option>
+				<option value="466">Taiwan</option>
+				<option value="436">Tajikistan</option>
+				<option value="640">Tanzania</option>
+				<option value="520">Thailand</option>
+				<option value="615">Togolese Republic</option>
+				<option value="539">Tonga</option>
+				<option value="374">Trinidad and Tobago</option>
+				<option value="605">Tunisia</option>
+				<option value="286">Turkey</option>
+				<option value="438">Turkmenistan</option>
+				<option value="376">Turks and Caicos Islands (UK)</option>
+				<option value="641">Uganda</option>
+				<option value="255">Ukraine</option>
+				<option value="424">United Arab Emirates</option>
+				<option value="430">United Arab Emirates (Abu Dhabi)</option>
+				<option value="431">United Arab Emirates (Dubai)</option>
+				<option value="235">United Kingdom (MCC:234)</option>
+				<option value="234">United Kingdom (MCC:235)</option>
+				<option value="310">United States of America (MCC:310)</option>
+				<option value="311">United States of America (MCC:331)</option>
+				<option value="312">United States of America (MCC:312)</option>
+				<option value="313">United States of America (MCC:313)</option>
+				<option value="314">United States of America (MCC:314)</option>
+				<option value="315">United States of America (MCC:315)</option>
+				<option value="316">United States of America (MCC:316)</option>
+				<option value="332">United States Virgin Islands (US)</option>
+				<option value="748">Uruguay</option>
+				<option value="434">Uzbekistan</option>
+				<option value="541">Vanuatu</option>
+				<option value="225">Vatican City State</option>
+				<option value="734">Venezuela</option>
+				<option value="452">Viet Nam</option>
+				<option value="543">Wallis and Futuna (France)</option>
+				<option value="421">Yemen</option>
+				<option value="645">Zambia</option>
+				<option value="648">Zimbabwe</option>
+			</select>		
+		</td>
+	</tr>
+	<tr>
+		<td>Country Short</td>
+		<td><input type="text" id="country" size="20"/></td>
+	</tr>
+	<tr>
+		<td>MCC</td>
+		<td><input type="text" id="MCC" size="20"/></td>
+	</tr>
+	<tr>
+		<td>MNC</td>
+		<td><input type="text" id="MNC" size="20"/></td>
+	</tr>
+	<tr>
+		<td></td>
+		<td align="left">
+			<button type="button" style="width:120px"
+					onClick="document.getElementById('getsetRes').innerHTML='';
+							document.getElementById('getsetRes').innerHTML=
+							AutoCompleteData('MCC','MNC','providerTag','country','APN','dialNo','user','pass')?
+							'AutoComplete operation successfully':
+							'AutoComplete operation failed';">AutoComplete
+			</button>
+		</td>										
+	</tr>	
+	<tr>
+		<td>Provider</td><td><input type="text" id="providerTag" size="20"/></td>
+	</tr>
+	<tr>
+		<td>APN</td><td><input type="text" id="APN" size="20"/></td>
+	</tr>
+	<tr>
+		<td>Dial Number</td><td><input type="text" id="dialNo" size="20"/></td>
+	</tr>
+	<tr>
+		<td>User</td><td><input type="text" id="user" size="20"/></td>
+	</tr>
+	<tr>
+		<td>Password</td><td><input type="text" id="pass" size="20"/></td>
+	</tr>
+		<td></td>
+		<td align="left">
+		<button type="button" style="width:120px" 
+				onClick="document.getElementById('getsetRes').innerHTML='';
+						document.getElementById('getsetRes').innerHTML=
+						SetProviderData('MCC','MNC','providerTag','country','APN','dialNo','user','pass')?
+						'Set operation successfully':
+						'Set operation failed';">Set</button>
+	</tr>	
+	</table>		
+	<hr>
+	<div id="getsetRes"><em></em></br></div>	
+</div>
+</div>	
+</div> 
+</div>
+<div id="footer"></div>
+</body>
+</html>

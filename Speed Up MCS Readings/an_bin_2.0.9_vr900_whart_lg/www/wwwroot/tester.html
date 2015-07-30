@@ -1,0 +1,309 @@
+<!DOCTYPE html
+    PUBLIC "-//W3C//DTD XHTML 1.0 Strict//EN"
+    "http://www.w3.org/TR/xhtml1/DTD/xhtml1-strict.dtd">
+<html xmlns="http://www.w3.org/1999/xhtml" lang="en" xml:lang="en">
+
+<head>
+	<title>RPC Tester</title>
+	<script type="text/javascript" src="jsolait/jsolait.js"></script>
+	<script type="text/javascript">jsolait.baseURI="jsolait";</script>
+
+	<style type="text/css">
+		table {
+			border-collapse:collapse;
+			border: 3px solid #cccccc;
+		}
+		th {
+			border-style: groove groove groove groove;
+		}
+		textarea,input{
+			border: 1px solid #cccccc;
+			background-color: lightyellow;
+			margin:4px;
+		}
+
+		textarea:hover,input:hover {
+			background:#ffa;
+			border: 2px solid #aaaaff;
+			margin:3px;
+			cursor:text;
+		}
+	</style>
+	<script type="text/javascript">
+	//<![CDATA[
+	// return a string version of a thing, without name.
+	// calls recursive function to actually traverse content.
+	function dump(content) {
+		return dumpRecur(content,0,true) + "\n";
+	}
+
+	// put content into an alert box
+	function dumpAlert(label,content) {
+		alert(label+"\n"+dump(content));
+	}
+
+	function dumpConfirm(label,content) {
+		confirm(label+"\n"+dump(content));
+	}
+
+	// recursive function traverses content, returns string version of thing
+	// content: what to dump.
+	// indent: how far to indent.
+	// neednl: true if need newline, false if not
+	function dumpRecur(content,indent,neednl) {
+		var out = "";
+		if (typeof(content) == 'function') return 'function';
+		else if (dumpIsNull(content))
+		{
+			out+="null";
+		}
+		else if (dumpIsArray(content)) {	// handle real arrays in brackets
+		if (neednl) out += "\n"+dumpSpaces(indent);
+		out+="[ ";
+		var inside = false;
+		for (var i=0; i<content.length; i++) {
+		if (inside)
+			out+=",\n"+dumpSpaces(indent+1);
+		else
+			inside=true;
+			out+=dumpRecur(content[i],indent+1,false);
+		}
+		out+="\n"+dumpSpaces(indent)+"]";
+		} else if (dumpIsObject(content)) {     // handle objects by association
+		if (neednl) out+="\n"+dumpSpaces(indent);
+		out+="{ ";
+		var inside = false;
+		for (var i in content) {
+			if (inside)
+				out+=",\n"+dumpSpaces(indent+1);
+		else
+			inside = true;
+		out+="'" + i + "':"
+			+ dumpRecur(content[i],indent+1,true);
+		}
+		out+="\n"+dumpSpaces(indent)+"}";
+		} else if (typeof(content) == 'string') {
+		out+="'" + content + "'";
+		} else {
+		out+=content;
+		}
+		return out;
+	}
+
+	// print n groups of two spaces for indent
+	function dumpSpaces (n) {
+		var out = '';
+		for (var i=0; i<n; i++) out += '  ';
+		return out;
+	}
+
+	function dumpIsNull(thing)
+	{
+		if ( thing == null ) return true ;
+		return false ;
+	}
+	// Naive way to tell an array from an object:
+	// it's an array if it has a defined length
+	function dumpIsArray (thing) {
+		if (typeof(thing) != 'object') return false;
+		if (typeof(thing.length) == 'undefined') return false;
+		return true;
+	}
+
+	// Naive way to tell an array from an object:
+	// it's an array if it has a defined length
+	function dumpIsObject (thing) {
+		if (typeof(thing) != 'object') return false;
+		if (typeof(thing.length) != 'undefined') return false;
+		return true;
+	}
+	function params(method)
+	{
+		var retval="";
+		for ( param in method.params )
+		{
+			retval += '"'+param+'" : ' ;
+			if ( method.params[param].type== 'string' ) retval += '""' ;
+			if ( method.params[param].type== 'array' ) retval += '[""]' ;
+
+			retval += ', ' ;
+		}
+		retval = retval.slice(0,retval.length-2);
+		return retval;
+	}
+	function showParams(){
+		var method = document.getElementById("methods").value ;
+		document.getElementById("txServer").value = "/rpc.cgi";
+		document.getElementById("txMethod").value = method;
+		document.getElementById("txDescription").value = dump(methods[method]) ;
+		document.getElementById("txParam").value = params(methods[method]);
+		document.getElementById("txResult").value = "";
+		document.getElementById("txParam").focus() ;
+	}
+	function getJsonRPC()
+	{
+		var jsonrpc ;
+		try{
+			jsonrpc = imprt("jsonrpc") ;
+		}catch(e){
+			throw "importing of jsonrpc module failed.";
+		}
+		return jsonrpc ;
+	}
+	function onSubmit(){
+		var addr = document.getElementById("txServer").value;
+		var m = document.getElementById("txMethod").value;
+		m = m.replace(/"/g, "");
+		m = m.replace(/'/g, "");
+		m = m.replace(/ /g, "");
+		if(m.length > 0){
+			var methods = m.split(",");
+		}else{
+			var methods = [];
+		}
+		var evalStr = document.getElementById("txParam").value;
+		evalStr = m+"({"+evalStr+"})";
+		var txRslt = document.getElementById("txResult");
+
+		txRslt.value = "";
+		t1=new Date();
+		try{
+			var server = new jsonrpc.ServiceProxy(addr, methods);
+			var rslt = eval("server." + evalStr);
+			txRslt.value = dump(rslt);
+		}catch(e){
+			var em;
+			if(e.toTraceString){
+			em=e.toTraceString();
+			}else{
+			em = e.message;
+			}
+			txRslt.value = "Error trace: \n\n" + em;
+		}
+		t2=new Date();
+		var x=document.getElementById("Diff");
+		x.value = Math.ceil((t2.getTime()-t1.getTime())) + " miliseconds";
+		return false;
+	}
+	function Complete(obj, evt) {
+		if ((!obj) || (!evt) || (methodNames.length == 0)) {
+			return;
+		}
+
+		if (obj.value.length == 0) {
+			return;
+		}
+		var elm = (obj.setSelectionRange) ? evt.which : evt.keyCode;
+
+		if ((elm < 32) || (elm >= 33 && elm <= 46) || (elm >= 112 && elm <= 123)) {
+			return;
+		}
+		var txt = obj.value.replace(/;/gi, ",");
+		elm = txt.split(",");
+		txt = elm.pop();
+		txt = txt.replace(/^\s*/, "");
+
+		if (txt.length == 0) {
+			return;
+		}
+
+		if (obj.createTextRange) {
+			var rng = document.selection.createRange();
+			if (rng.parentElement() == obj) {
+				elm = rng.text;
+				var ini = obj.value.lastIndexOf(elm);
+			}
+		} else if (obj.setSelectionRange) {
+			var ini = obj.selectionStart;
+		}
+
+		for (var i = 0; i < methodNames.length; i++) {
+			elm = methodNames[i].toString();
+
+			if (elm.toLowerCase().indexOf(txt.toLowerCase()) == 0) {
+				obj.value += elm.substring(txt.length, elm.length);
+				break;
+			}
+		}
+
+		if (obj.createTextRange) {
+			rng = obj.createTextRange();
+			rng.moveStart("character", ini);
+			rng.moveEnd("character", obj.value.length);
+			rng.select();
+		} else if (obj.setSelectionRange) {
+			obj.setSelectionRange(ini, obj.value.length);
+		}
+	}
+
+	var jsonrpc=getJsonRPC() ;
+	var methods={} ;
+	var methodNames=[] ;
+	try{
+		var schema = jsolait.loadURI("methods.json") ;
+		eval("methods="+schema) ;
+	}catch(e){
+		throw "Unable to load methods.json.";
+	}
+	for ( method in methods){
+		methodNames.push(method);
+	}
+	methodNames.sort();
+
+	// ]]>
+	</script>
+</head>
+
+<body>
+	<table width="100%" border="1">
+		<tr>
+			<td  style="text-align:center;">
+				<div style="width:5em;font-family:verdana;display:inline;">
+					<select id="methods" onchange="showParams();">
+						<option selected="selected">Methods</option>
+					</select>
+					</span>
+				</div>
+				<script>
+				for ( method in methods){
+					option = document.createElement("option");
+					option.innerHTML = method ;
+					option.setAttribute("value",method);
+					document.getElementById("methods").appendChild(option);
+				}
+				</script>
+			</td>
+			<td>
+				<div style="width:5em; font-family:verdana;display:inline;margin-left:5px;">
+					<span>Service</span>
+					<span><input type="text" id="txServer" size="30" value="/rpc.cgi"/></span>
+				</div>
+			</td>
+		</tr>
+		<tr valign="top" style="text-align:center;">
+			<td style="width:18%"><input type="text" id="txMethod" size="30" onKeyUp="Complete(this, event)"/></td>
+			<td style="width:80%"><textarea wrap="off" id="txParam" rows="7" style="width:99%"> </textarea></td>
+		</tr>
+		<tr>
+			<td style="text-align:center;"><button style="width:7em;" type="button" onclick="onSubmit()">run</button></td>
+			<td colspan="2">
+				<div style="float:left;font-family:verdana;margin-left:5px;">
+					<span>Elapsed</span>
+					<span><input type="text" id="Diff" size="30" name="Diff" /></span>
+				</div>
+			</td>
+		</tr>
+		<tr>
+			<td colspan="3">
+				<textarea style="width:99%;" rows="13" wrap="off" id="txResult"></textarea>
+			</td>
+		</tr>
+		<tr>
+			<td colspan="3">
+				<textarea style="width:99%" rows="13" wrap="off" id="txDescription"></textarea>
+			</td>
+		</tr>
+	</table>
+</body>
+</html>
+

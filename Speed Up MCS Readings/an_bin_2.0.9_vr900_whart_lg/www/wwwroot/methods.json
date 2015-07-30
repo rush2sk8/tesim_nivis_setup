@@ -1,0 +1,1284 @@
+{
+        "config.getConfig": {
+                "description": "Get the whole config file", 
+                "extra": {
+                        "users": [
+                                "ADMIN_USER"
+                        ]
+                }, 
+                "params": {
+                        "configFile": {
+                                "default": "config.ini", 
+                                "description": "The configuration file, search by default in NIVIS_PROFILE", 
+                                "optional": true, 
+                                "type": "string"
+                        }
+                }, 
+                "return": [
+                        {
+                                "group": {
+                                        "type": "string"
+                                }, 
+                                "variables": [
+                                        {
+                                                "*": "*"
+                                        }
+                                ]
+                        }
+                ], 
+                "type": "method"
+        }, 
+        "config.getConfigPart": {
+                "description": "Get a part of config file", 
+                "extra": {
+                        "users": [
+                                "ADMIN_USER"
+                        ]
+                }, 
+                "params": {
+                        "configFile": {
+                                "default": "config.ini", 
+                                "description": "The configuration file, search by default in NIVIS_PROFILE", 
+                                "optional": true, 
+                                "type": "string"
+                        }, 
+                        "maxVarsNo": {
+                                "description": "Maximum number of returned variables", 
+                                "type": "int"
+                        }
+                }, 
+                "return": [
+                        {
+                                "group": {
+                                        "type": "string"
+                                }, 
+                                "variables": [
+                                        {
+                                                "*": "*"
+                                        }
+                                ]
+                        }
+                ], 
+                "type": "method"
+        }, 
+        "config.getGroupVariables": {
+                "description": "Get all variables from a group", 
+                "extra": {
+                        "users": [
+                                "ADMIN_USER"
+                        ]
+                }, 
+                "params": {
+                        "configFile": {
+                                "default": "config.ini", 
+                                "description": "The configuration file, search by default in NIVIS_PROFILE", 
+                                "optional": true, 
+                                "type": "string"
+                        }, 
+                        "group": {
+                                "description": "Config group", 
+                                "type": "string"
+                        }
+                }, 
+                "return": [
+                        {
+                                "*": "*"
+                        }
+                ], 
+                "type": "method"
+        }, 
+        "config.getGroups": {
+                "description": "Get the group list", 
+                "extra": {
+                        "users": [
+                                "ADMIN_USER"
+                        ]
+                }, 
+                "params": {
+                        "configFile": {
+                                "default": "config.ini", 
+                                "description": "The configuration file, search by default in NIVIS_PROFILE", 
+                                "optional": true, 
+                                "type": "string"
+                        }
+                }, 
+                "return": [
+                        "string"
+                ], 
+                "type": "method"
+        }, 
+        "config.getVariable": {
+                "description": "Get a config variable value", 
+                "extra": {
+                        "users": [
+                                "ADMIN_USER"
+                        ]
+                }, 
+                "params": {
+                        "configFile": {
+                                "default": "config.ini", 
+                                "description": "The configuration file, search by default in NIVIS_PROFILE", 
+                                "optional": true, 
+                                "type": "string"
+                        }, 
+                        "group": {
+                                "description": "Config group in which the variable resides (no group if missing/empty)", 
+                                "optional": true, 
+                                "type": "string"
+                        }, 
+                        "varName": {
+                                "description": "Variable name", 
+                                "type": "string"
+                        }, 
+                        "varPos": {
+                                "default": 0, 
+                                "description": "Variable position - when using multiple variables with the same name", 
+                                "optional": true, 
+                                "type": "integer"
+                        }
+                }, 
+                "return": "string", 
+                "type": "method"
+        }, 
+        "config.setGroupVariables": {
+                "description": "Set all group variables; delete all previous group variables", 
+                "extra": {
+                        "users": [
+                                "ADMIN_USER"
+                        ]
+                }, 
+                "params": {
+                        "configFile": {
+                                "default": "config.ini", 
+                                "description": "The configuration file, search by default in NIVIS_PROFILE", 
+                                "optional": true, 
+                                "type": "string"
+                        }, 
+                        "group": {
+                                "description": "Config group", 
+                                "type": "string"
+                        }, 
+                        "variables": [
+                                {
+                                        "varName": {
+                                                "description": "Variable name", 
+                                                "type": "string"
+                                        }, 
+                                        "varPos": {
+                                                "default": 0, 
+                                                "description": "Variable position - when using multiple variables with the same name", 
+                                                "optional": true, 
+                                                "type": "integer"
+                                        }, 
+                                        "varValue": {
+                                                "description": "Variable value", 
+                                                "type": "string"
+                                        }
+                                }
+                        ]
+                }, 
+                "return": "boolean", 
+                "type": "method"
+        }, 
+        "config.setVariable": {
+                "description": "Set a config variable. If either the group or the variable doesn't exists, they will both be created", 
+                "extra": {
+                        "users": [
+                                "ADMIN_USER"
+                        ]
+                }, 
+                "params": {
+                        "configFile": {
+                                "default": "config.ini", 
+                                "description": "The configuration file, default in NIVIS_PROFILE", 
+                                "optional": true, 
+                                "type": "string"
+                        }, 
+                        "group": {
+                                "description": "Config group (no group if missing/empty)", 
+                                "optional": true, 
+                                "type": "string"
+                        }, 
+                        "groupPos": {
+                                "default": 0, 
+                                "description": "Group position if config file has multiple groups with the same name", 
+                                "optional": true, 
+                                "type": "integer"
+                        }, 
+                        "varName": {
+                                "description": "Variable name to be modified", 
+                                "type": "string"
+                        }, 
+                        "varPos": {
+                                "default": 0, 
+                                "description": "Variable position within group", 
+                                "optional": true, 
+                                "type": "integer"
+                        }, 
+                        "varValue": {
+                                "description": "New variable value", 
+                                "type": "string"
+                        }
+                }, 
+                "return": "boolean", 
+                "type": "method"
+        }, 
+        "description": "SQL DAL RPC methods.", 
+        "file.create": {
+                "description": "Create an empty file", 
+                "extra": {
+                        "users": [
+                                "ADMIN_USER"
+                        ]
+                }, 
+                "params": {
+                        "file": {
+                                "description": "The configuration file to be created, search by default in NIVIS_PROFILE", 
+                                "type": "string"
+                        }
+                }, 
+                "return": "boolean", 
+                "type": "method"
+        }, 
+        "file.exists": {
+                "description": "Check if a file exists. Suports fnmatch", 
+                "extra": {
+                        "users": [
+                                "ADMIN_USER"
+                        ]
+                }, 
+                "params": {
+                        "file": {
+                                "description": "The configuration file to be searched, search by default in NIVIS_PROFILE", 
+                                "type": "string"
+                        }
+                }, 
+                "return": "boolean", 
+                "type": "method"
+        }, 
+        "file.remove": {
+                "description": "Delete a file", 
+                "extra": {
+                        "users": [
+                                "ADMIN_USER"
+                        ]
+                }, 
+                "params": {
+                        "file": {
+                                "description": "The configuration file to be removed, search by default in NIVIS_PROFILE", 
+                                "type": "string"
+                        }
+                }, 
+                "return": "boolean", 
+                "type": "method"
+        }, 
+        "file.rename": {
+                "description": "Rename a file", 
+                "extra": {
+                        "users": [
+                                "ADMIN_USER"
+                        ]
+                }, 
+                "params": {
+                        "file": {
+                                "description": "The source file to be renamed, search by default in NIVIS_PROFILE", 
+                                "type": "string"
+                        }, 
+                        "newFile": {
+                                "description": "The new file name, search by default in NIVIS_PROFILE", 
+                                "type": "string"
+                        }
+                }, 
+                "return": "boolean", 
+                "type": "method"
+        }, 
+        "isa100.bbr.getEngMode": {
+                "description": "", 
+                "extra": {
+                        "users": [
+                                "ADMIN_USER"
+                        ]
+                }, 
+                "params": null, 
+                "return": "integer", 
+                "type": "method"
+        }, 
+        "isa100.bbr.setEngMode": {
+                "description": "", 
+                "extra": {
+                        "users": [
+                                "ADMIN_USER"
+                        ]
+                }, 
+                "params": {
+                        "channel": {
+                                "description": "", 
+                                "type": "integer"
+                        }, 
+                        "mode": {
+                                "description": "", 
+                                "type": "integer"
+                        }, 
+                        "pwrlvl": {
+                                "description": "", 
+                                "type": "integer"
+                        }
+                }, 
+                "return": "boolean", 
+                "type": "method"
+        }, 
+        "isa100.getSystemStatus": {
+                "description": "Get system status", 
+                "extra": {
+                        "users": [
+                                "ADMIN_USER"
+                        ]
+                }, 
+                "params": null, 
+                "return": [
+                        "string"
+                ], 
+                "type": "method"
+        }, 
+        "isa100.mh.delPublisher": {
+                "description": "Remove a publisher from MonitorHost publishers list", 
+                "extra": {
+                        "users": [
+                                "ADMIN_USER"
+                        ]
+                }, 
+                "params": {
+                        "burst": {
+                                "description": "Burst value. Only for WHART implementation", 
+                                "required": false, 
+                                "type": "string"
+                        }, 
+                        "eui64": {
+                                "required": true, 
+                                "type": "string"
+                        }
+                }, 
+                "return": "boolean", 
+                "type": "method"
+        }, 
+        "isa100.mh.setPublisher": {
+                "description": "Add/Update a publisher in MonitorHost publishers list", 
+                "extra": {
+                        "users": [
+                                "ADMIN_USER"
+                        ]
+                }, 
+                "params": {
+                        "channels": {
+                                "description": "Channel values", 
+                                "format": "<TSAP_ID>,<ObjID>,<AttrID>,<Index1>, <Index2>, <format>, <name>, <unit_of_measurement>", 
+                                "required": true, 
+                                "type": "array"
+                        }, 
+                        "concentrator": {
+                                "format": "<CO_TSAP_ID>,<CO_ID>,<Data_Period>,<Data_Phase>,<Data_StaleLimit>,<ContentVersion>", 
+                                "required": true, 
+                                "type": "string"
+                        }, 
+                        "eui64": {
+                                "required": true, 
+                                "type": "string"
+                        }, 
+                        "trigger": {
+                                "description": "Trigger values. Only for WHART implementation", 
+                                "format": "<command number>,<burst message>,<burst trigger mode selection>,<device variable classification>,<units code>,<trigger level>", 
+                                "required": false, 
+                                "type": "string"
+                        }
+                }, 
+                "return": "boolean", 
+                "type": "method"
+        }, 
+        "isa100.modbus.gw.delRow": {
+                "description": "Remove a row from MODBUS configuration file", 
+                "extra": {
+                        "users": [
+                                "ADMIN_USER"
+                        ]
+                }, 
+                "params": {
+                        "mapType": {
+                                "default": "0", 
+                                "required": false, 
+                                "type": "string"
+                        }, 
+                        "rowValue": {
+                                "description": "only primaryKey is required", 
+                                "format_Host": "<UnitId>, <EUI64>", 
+                                "format_Register": "<start_address>, <word_count>,<TSAPID>,<ObjId>,<AttrId>,<Idx1>,<Idx2>,<MethId>", 
+                                "primaryKey_Host": "<UnitId>", 
+                                "primaryKey_Register": "<start_address>", 
+                                "required": true, 
+                                "type": "string"
+                        }, 
+                        "section": {
+                                "default": "HOSTS", 
+                                "description": "Accepted values: HOSTS / INPUT_REGISTERS / HOLDING_REGISTERS", 
+                                "required": false, 
+                                "type": "string"
+                        }
+                }, 
+                "return": "boolean", 
+                "type": "method"
+        }, 
+        "isa100.modbus.gw.setRow": {
+                "description": "Add/Update a row in MODBUS configuration file", 
+                "extra": {
+                        "users": [
+                                "ADMIN_USER"
+                        ]
+                }, 
+                "params": {
+                        "mapType": {
+                                "default": "0", 
+                                "required": false, 
+                                "type": "string"
+                        }, 
+                        "rowValue": {
+                                "format_Host": "<UnitId>, <EUI64>", 
+                                "format_Register": "<start_address>, <word_count>,<TSAPID>,<ObjId>,<AttrId>,<Idx1>,<Idx2>,<MethId>", 
+                                "primaryKey_Host": "<UnitId>", 
+                                "primaryKey_Register": "<start_address>", 
+                                "required": true, 
+                                "type": "string"
+                        }, 
+                        "section": {
+                                "default": "HOSTS", 
+                                "description": "Accepted values: HOSTS / INPUT_REGISTERS / HOLDING_REGISTERS", 
+                                "required": false, 
+                                "type": "string"
+                        }
+                }, 
+                "return": "boolean", 
+                "type": "method"
+        }, 
+        "isa100.modbus.server.delRow": {
+                "description": "Remove a row from MODBUS configuration file", 
+                "extra": {
+                        "users": [
+                                "ADMIN_USER"
+                        ]
+                }, 
+                "params": {
+                        "rowValue": {
+                                "description": "only primaryKey is required", 
+                                "format_Host": "<UnitId>, <EUI64>", 
+                                "format_Register": "<start_address>, <word_count>,<TSAPID>,<ObjId>,<AttrId>,<Idx1>,<Idx2>,<MethId>", 
+                                "primaryKey_Host": "<UnitId>", 
+                                "primaryKey_Register": "<start_address>", 
+                                "required": true, 
+                                "type": "string"
+                        }, 
+                        "section": {
+                                "default": "HOSTS", 
+                                "description": "Accepted values: HOSTS / INPUT_REGISTERS / HOLDING_REGISTERS", 
+                                "required": false, 
+                                "type": "string"
+                        }
+                }, 
+                "return": "boolean", 
+                "type": "method"
+        }, 
+        "isa100.modbus.server.setRow": {
+                "description": "Add/Update a row in MODBUS configuration file", 
+                "extra": {
+                        "users": [
+                                "ADMIN_USER"
+                        ]
+                }, 
+                "params": {
+                        "rowValue": {
+                                "format_Host": "<UnitId>, <EUI64>", 
+                                "format_Register": "<start_address>, <word_count>,<TSAPID>,<ObjId>,<AttrId>,<Idx1>,<Idx2>,<MethId>", 
+                                "primaryKey_Host": "<UnitId>", 
+                                "primaryKey_Register": "<start_address>", 
+                                "required": true, 
+                                "type": "string"
+                        }, 
+                        "section": {
+                                "default": "HOSTS", 
+                                "description": "Accepted values: HOSTS / INPUT_REGISTERS / HOLDING_REGISTERS", 
+                                "required": false, 
+                                "type": "string"
+                        }
+                }, 
+                "return": "boolean", 
+                "type": "method"
+        }, 
+        "isa100.sm.delDevice": {
+                "description": "Remove a device from SystemMonitor provisioning file (the white list)", 
+                "extra": {
+                        "users": [
+                                "ADMIN_USER"
+                        ]
+                }, 
+                "params": {
+                        "NetworkType": {
+                                "default": "0", 
+                                "description": "Accepted values: 0 / 1 / 2; 0: defined at compile-time; 1: isa100; 2: whart", 
+                                "required": false, 
+                                "type": "integer"
+                        }, 
+                        "deviceType": {
+                                "default": "DEVICE", 
+                                "description": "Accepted values: DEVICE / BACKBONE / GATEWAY", 
+                                "required": false, 
+                                "type": "string"
+                        }, 
+                        "deviceValue": {
+                                "description": "Only <EUI64Specifier> is required, the rest of the value( <Key>, <Subnet>) is irrelevant. <EUI64Specifier> is <EUI64> or <EUI64> - <EUI64>", 
+                                "primaryKey": "<EUI64Specifier>", 
+                                "required": true, 
+                                "type": "string"
+                        }
+                }, 
+                "return": "boolean", 
+                "type": "method"
+        }, 
+        "isa100.sm.getLogLevel": {
+                "description": "Get SM Log level", 
+                "extra": {
+                        "users": [
+                                "ADMIN_USER"
+                        ]
+                }, 
+                "params": null, 
+                "return": "string", 
+                "type": "method"
+        }, 
+        "isa100.sm.setDevice": {
+                "description": "Add/Update a device in SystemMonitor provisioning file (the white list)", 
+                "extra": {
+                        "users": [
+                                "ADMIN_USER"
+                        ]
+                }, 
+                "params": {
+                        "NetworkType": {
+                                "default": "0", 
+                                "description": "Accepted values: 0 / 1 / 2; 0: defined at compile-time; 1: isa100; 2: whart", 
+                                "required": false, 
+                                "type": "integer"
+                        }, 
+                        "deviceType": {
+                                "default": "DEVICE", 
+                                "description": "Accepted values: DEVICE / BACKBONE / GATEWAY", 
+                                "required": false, 
+                                "type": "string"
+                        }, 
+                        "deviceValue": {
+                                "description": "<EUI64Specifier> is <EUI64> or <EUI64> - <EUI64> (single OR range)", 
+                                "format": "<EUI64Specifier>, <Key>, <Subnet>", 
+                                "required": true, 
+                                "type": "string"
+                        }
+                }, 
+                "return": "boolean", 
+                "type": "method"
+        }, 
+        "isa100.sm.setLogLevel": {
+                "description": "Set SM log level", 
+                "extra": {
+                        "users": [
+                                "ADMIN_USER"
+                        ]
+                }, 
+                "params": {
+                        "logLevel": {
+                                "required": true, 
+                                "type": "string"
+                        }
+                }, 
+                "return": "boolean", 
+                "type": "method"
+        }, 
+        "misc.applyConfigChanges": {
+                "description": "Command a module to reload configuration parameters/provisioning files", 
+                "extra": {
+                        "users": [
+                                "ADMIN_USER"
+                        ]
+                }, 
+                "params": {
+                        "module": {
+                                "description": "Module name", 
+                                "type": "string"
+                        }
+                }, 
+                "return": "boolean", 
+                "type": "method"
+        }, 
+        "misc.discoverRouters": {
+                "description": "Discover routers from local network", 
+                "extra": {
+                        "users": [
+                                "ADMIN_USER"
+                        ]
+                }, 
+                "params": null, 
+                "return": [
+                        {
+                                "anID": {
+                                        "type": "string"
+                                }, 
+                                "dynamicIP": {
+                                        "format": "ipv4-address", 
+                                        "type": "string"
+                                }, 
+                                "staticIP": {
+                                        "format": "ipv4-address", 
+                                        "type": "string"
+                                }
+                        }
+                ], 
+                "type": "method"
+        }, 
+        "misc.fileDownload": {
+                "description": "Run the specified script then downloads the specified file (allows creating the files on the fly)", 
+                "extra": {
+                        "users": [
+                                "ADMIN_USER"
+                        ]
+                }, 
+                "params": {
+                        "file": {
+                                "description": "File to download", 
+                                "type": "string"
+                        }, 
+                        "script": {
+                                "default": "If the file to download is FILE.EXT, the default script name will be FILE.EXT.sh", 
+                                "description": "Script to run before downloading the file.", 
+                                "optional": true, 
+                                "type": "string"
+                        }, 
+                        "scriptParams": {
+                                "default": "", 
+                                "description": "Script parameters", 
+                                "optional": true, 
+                                "type": "string"
+                        }
+                }, 
+                "return": "boolean", 
+                "type": "method"
+        }, 
+        "misc.fileUpload": {
+                "description": "Uploads a file to the board then runs the specified script name", 
+                "extra": {
+                        "users": [
+                                "ADMIN_USER"
+                        ]
+                }, 
+                "params": {
+                        "file": {
+                                "description": "File to download", 
+                                "type": "string"
+                        }, 
+                        "script": {
+                                "default": "If the file to upload is FILE.EXT, the default script name will be FILE.EXT_put.sh", 
+                                "description": "The script to run after the file was uploaded", 
+                                "optional": true, 
+                                "type": "string"
+                        }, 
+                        "scriptParams": {
+                                "default": "", 
+                                "description": "The script parameters.", 
+                                "optional": true, 
+                                "type": "string"
+                        }
+                }, 
+                "return": "boolean", 
+                "type": "method"
+        }, 
+        "misc.getDhcpInfo": {
+                "description": "Get the DHCP information.", 
+                "extra": {
+                        "users": [
+                                "ADMIN_USER"
+                        ]
+                }, 
+                "params": null, 
+                "return": {
+                        "defgw": {
+                                "format": "ipv4-address", 
+                                "type": "string"
+                        }, 
+                        "dnsList": {
+                                "type": "array"
+                        }, 
+                        "ip": {
+                                "format": "ipv4-address", 
+                                "type": "string"
+                        }, 
+                        "mask": {
+                                "format": "ipv4-mask", 
+                                "type": "string"
+                        }
+                }, 
+                "type": "method"
+        }, 
+        "misc.getGatewayNetworkInfo": {
+                "description": "Get the gateway variables.", 
+                "extra": {
+                        "users": [
+                                "ADMIN_USER"
+                        ]
+                }, 
+                "params": null, 
+                "return": {
+                        "defgw": {
+                                "format": "ipv4-address", 
+                                "type": "string"
+                        }, 
+                        "dhcpEnabled": {
+                                "description": "True if DHCP client is enabled", 
+                                "type": "boolean"
+                        }, 
+                        "ip": {
+                                "format": "ipv4-address", 
+                                "type": "string"
+                        }, 
+                        "mac0": {
+                                "description": "ETH0 MAC. May be empty if the board use a IP-dependent MAC on ETH0", 
+                                "type": "string"
+                        }, 
+                        "mac1": {
+                                "description": "ETH1 MAC. May be empty if the board does not use ETH1", 
+                                "type": "string"
+                        }, 
+                        "mask": {
+                                "format": "ipv4-mask", 
+                                "type": "string"
+                        }, 
+                        "nameservers": {
+                                "type": "array"
+                        }
+                }, 
+                "type": "method"
+        }, 
+        "misc.getGprsProviderInfo": {
+                "description": "", 
+                "extra": {
+                        "users": [
+                                "ADMIN_USER"
+                        ]
+                }, 
+                "params": {
+                        "MCC": {
+                                "description": "Mobile Country Code. See:http://en.wikipedia.org/wiki/IMSI", 
+                                "type": "string"
+                        }, 
+                        "MNC": {
+                                "description": "Mobile Network Code. See:http://en.wikipedia.org/wiki/IMSI", 
+                                "type": "string"
+                        }
+                }, 
+                "return": {
+                        "APN": {
+                                "description": "Access Point Name", 
+                                "type": "string"
+                        }, 
+                        "country": {
+                                "description": "Short country name.See:http://en.wikipedia.org/wiki/ISO_3166-1_alpha-2", 
+                                "format": "ISO 3166-1 alpha-2", 
+                                "type": "string"
+                        }, 
+                        "dialNo": {
+                                "format": "phone", 
+                                "optional": true, 
+                                "type": "string"
+                        }, 
+                        "pass": {
+                                "optional": true, 
+                                "type": "string"
+                        }, 
+                        "providerTag": {
+                                "description": "provider identification tag; MUST contain only lower case alpha characters and '_' (no white spaces),  and should end in short country name. Example: orange_ro,  orange_us,  orange_nl, vodafone_us.", 
+                                "type": "string"
+                        }, 
+                        "user": {
+                                "optional": true, 
+                                "type": "string"
+                        }
+                }, 
+                "type": "method"
+        }, 
+        "misc.getNtpServers": {
+                "description": "Get the ntp servers.", 
+                "extra": {
+                        "users": [
+                                "ADMIN_USER"
+                        ]
+                }, 
+                "params": null, 
+                "return": {
+                        "ntpservers": {
+                                "format": "ntp-address", 
+                                "type": "array"
+                        }
+                }, 
+                "type": "method"
+        }, 
+        "misc.getVersion": {
+                "description": "Get the firmware version", 
+                "extra": {
+                        "users": [
+                                "ADMIN_USER"
+                        ]
+                }, 
+                "params": null, 
+                "return": "string", 
+                "type": "method"
+        }, 
+        "misc.hardReset": {
+                "description": "Reboot the board. The method returns before the actual hard reset terminates", 
+                "extra": {
+                        "users": [
+                                "ADMIN_USER"
+                        ]
+                }, 
+                "params": null, 
+                "return": "boolean", 
+                "type": "method"
+        }, 
+        "misc.remoteCmd": {
+                "description": "Execute a shell command.", 
+                "extra": {
+                        "users": [
+                                "ADMIN_USER"
+                        ]
+                }, 
+                "params": {
+                        "cmd": {
+                                "description": "Command to execute.", 
+                                "type": "string"
+                        }
+                }, 
+                "return": "string", 
+                "type": "method"
+        }, 
+        "misc.restartApp": {
+                "description": "Restart the application given as parameter (`killall app' ; start app)", 
+                "extra": {
+                        "users": [
+                                "ADMIN_USER"
+                        ]
+                }, 
+                "params": {
+                        "appName": {
+                                "description": "Application process name.", 
+                                "type": "string"
+                        }, 
+                        "appParams": {
+                                "description": "Application process parameters.", 
+                                "optional": true, 
+                                "type": "string"
+                        }
+                }, 
+                "return": "boolean", 
+                "type": "method"
+        }, 
+        "misc.setGatewayNetworkInfo": {
+                "description": "Set the gateway variables.", 
+                "extra": {
+                        "users": [
+                                "ADMIN_USER"
+                        ]
+                }, 
+                "params": {
+                        "defgw": {
+                                "format": "ipv4-address", 
+                                "type": "string"
+                        }, 
+                        "dhcpEnabled": {
+                                "default": "true", 
+                                "description": "If true enable DHCP client", 
+                                "optional": true, 
+                                "type": "string"
+                        }, 
+                        "ip": {
+                                "format": "ipv4-address", 
+                                "type": "string"
+                        }, 
+                        "mac0": {
+                                "description": "Considered ONLY if <updateMAC> is true. Empty: reset ETH0 MAC (use ip-based MAC). Not empty: set ETH0 MAC, stop using IP-based MAC", 
+                                "format": "6 bytes hex-encoded (12 chars, no separators) or empty", 
+                                "optional": true, 
+                                "type": "string"
+                        }, 
+                        "mac1": {
+                                "description": "Considered ONLY if <updateMAC> is true. Empty: reset ETH1 MAC. Not empty: set ETH1 MAC", 
+                                "format": "6 bytes hex-encoded (12 chars, no separators) or empty", 
+                                "optional": true, 
+                                "type": "string"
+                        }, 
+                        "mask": {
+                                "format": "ipv4-mask", 
+                                "type": "string"
+                        }, 
+                        "nameservers": {
+                                "type": "array"
+                        }, 
+                        "updateMAC": {
+                                "default": "false", 
+                                "description": "If true the ETH MAC's will be updated to value of parameters <mac> and <mac1>. Otherwise the current MAC values are not changed", 
+                                "optional": true, 
+                                "type": "string"
+                        }
+                }, 
+                "return": "boolean", 
+                "type": "method"
+        }, 
+        "misc.setGprsProviderInfo": {
+                "description": "", 
+                "extra": {
+                        "users": [
+                                "ADMIN_USER"
+                        ]
+                }, 
+                "params": {
+                        "APN": {
+                                "description": "Access Point Name", 
+                                "type": "string"
+                        }, 
+                        "MCC": {
+                                "description": "Mobile Country Code. See:http://en.wikipedia.org/wiki/IMSI", 
+                                "type": "string"
+                        }, 
+                        "MNC": {
+                                "description": "Mobile Network Code. See:http://en.wikipedia.org/wiki/IMSI", 
+                                "type": "string"
+                        }, 
+                        "country": {
+                                "description": "Short country name.See:http://en.wikipedia.org/wiki/ISO_3166-1_alpha-2", 
+                                "format": "ISO 3166-1 alpha-2", 
+                                "type": "string"
+                        }, 
+                        "dialNo": {
+                                "format": "phone", 
+                                "optional": true, 
+                                "type": "string"
+                        }, 
+                        "pass": {
+                                "optional": true, 
+                                "type": "string"
+                        }, 
+                        "providerTag": {
+                                "description": "provider identification tag; MUST contain only lower case alpha characters and '_' (no white spaces),  and should end in short country name. Example: orange_ro,  orange_us,  orange_nl, vodafone_us.", 
+                                "type": "string"
+                        }, 
+                        "user": {
+                                "optional": true, 
+                                "type": "string"
+                        }
+                }, 
+                "return": "boolean", 
+                "type": "method"
+        }, 
+        "misc.setNtpServers": {
+                "description": "Set the ntp servers.", 
+                "extra": {
+                        "users": [
+                                "ADMIN_USER"
+                        ]
+                }, 
+                "params": {
+                        "servers": {
+                                "format": "ntp-address", 
+                                "type": "array"
+                        }
+                }, 
+                "return": "boolean", 
+                "type": "method"
+        }, 
+        "misc.softwareReset": {
+                "description": "Software reset; restart all applications. The method returns before the actual soft reset terminates.", 
+                "extra": {
+                        "users": [
+                                "ADMIN_USER"
+                        ]
+                }, 
+                "params": null, 
+                "return": "boolean", 
+                "type": "method"
+        }, 
+        "sqldal.close": {
+                "description": "Close a previously open DB", 
+                "extra": {
+                        "users": [
+                                "ADMIN_USER"
+                        ]
+                }, 
+                "params": null, 
+                "return": "boolean", 
+                "type": "method"
+        }, 
+        "sqldal.execute": {
+                "description": "Execute a sql query.", 
+                "extra": {
+                        "users": [
+                                "ADMIN_USER"
+                        ]
+                }, 
+                "params": {
+                        "mode": {
+                                "default": "read", 
+                                "description": "es", 
+                                "optional": true, 
+                                "type": "string"
+                        }, 
+                        "query": {
+                                "description": "The query to be executed", 
+                                "type": "string"
+                        }, 
+                        "timeout": {
+                                "default": 10, 
+                                "description": "If the execution is not successfull in 'timeout' seconds, then the call fails", 
+                                "optional": true, 
+                                "type": "integer"
+                        }
+                }, 
+                "return": "boolean", 
+                "type": "method"
+        }, 
+        "sqldal.getCsv": {
+                "description": "Execute a SQL query and send back the result csv formatted", 
+                "extra": {
+                        "users": [
+                                "ADMIN_USER"
+                        ]
+                }, 
+                "params": {
+                        "query": {
+                                "description": "The query to be executed", 
+                                "type": "string"
+                        }
+                }, 
+                "return": "string", 
+                "type": "method"
+        }, 
+        "sqldal.lastInsertedRowId": {
+                "description": "Return the ID of the last inserted row.", 
+                "extra": {
+                        "users": [
+                                "ADMIN_USER"
+                        ]
+                }, 
+                "params": null, 
+                "return": "integer", 
+                "type": "method"
+        }, 
+        "sqldal.open": {
+                "description": "Open a DB", 
+                "extra": {
+                        "users": [
+                                "ADMIN_USER"
+                        ]
+                }, 
+                "params": {
+                        "dbFile": {
+                                "default": ":memory:", 
+                                "description": "The database absolute filename", 
+                                "optional": true, 
+                                "type": "string"
+                        }, 
+                        "mode": {
+                                "default": "read", 
+                                "description": "DB open flags", 
+                                "enum": [
+                                        "read", 
+                                        "write", 
+                                        "create"
+                                ], 
+                                "format": "mode1|mode2", 
+                                "optional": true, 
+                                "type": "string"
+                        }
+                }, 
+                "return": "boolean", 
+                "type": "method"
+        }, 
+        "sqldal.rowsAffected": {
+                "description": "Return the count of rows affected by the last execution.", 
+                "extra": {
+                        "users": [
+                                "ADMIN_USER"
+                        ]
+                }, 
+                "params": null, 
+                "return": "integer", 
+                "type": "method"
+        }, 
+        "user.advanced_auth": {
+                "description": "Secondary auth for administrative-level operations", 
+                "extra": {
+                        "users": [
+                                "ADMIN_USER"
+                        ]
+                }, 
+                "params": {
+                        "pass": {
+                                "description": "Password", 
+                                "type": "string"
+                        }
+                }, 
+                "return": "boolean", 
+                "type": "method"
+        }, 
+        "user.isValidSession": {
+                "description": "Return true if the user is still logged in.", 
+                "extra": {
+                        "users": [
+                                "ADMIN_USER"
+                        ]
+                }, 
+                "params": null, 
+                "return": "boolean", 
+                "type": "method"
+        }, 
+        "user.login": {
+                "description": "OBSOLETE, WILL REMOVE SOON. Login the user", 
+                "extra": {
+                        "users": [
+                                "ADMIN_USER"
+                        ]
+                }, 
+                "params": {
+                        "pass": {
+                                "description": "Password", 
+                                "type": "string"
+                        }, 
+                        "user": {
+                                "description": "User name", 
+                                "maximum": 16, 
+                                "minimum": 8, 
+                                "type": "string"
+                        }
+                }, 
+                "return": "boolean", 
+                "type": "method"
+        }, 
+        "user.logout": {
+                "description": "Logout of the current session", 
+                "extra": {
+                        "users": [
+                                "ADMIN_USER"
+                        ]
+                }, 
+                "params": null, 
+                "return": "boolean", 
+                "type": "method"
+        }, 
+        "user.reset_password": {
+                "description": "Reset the password to default for the user specified", 
+                "extra": {
+                        "users": [
+                                "ADMIN_USER"
+                        ]
+                }, 
+                "params": {
+                        "serialNo": {
+                                "description": "The serial number of the gateway", 
+                                "type": "string"
+                        }, 
+                        "user": {
+                                "description": "The user whose password reset", 
+                                "type": "string"
+                        }
+                }, 
+                "return": "boolean", 
+                "type": "method"
+        }, 
+        "user.secure_challenge": {
+                "description": "Request the challenge for challenge-response secure login", 
+                "extra": {
+                        "users": [
+                                "ADMIN_USER"
+                        ]
+                }, 
+                "params": {
+                        "req_id": {
+                                "description": "Request ID, random, browser-generated; secure_login must get same value later. Differentiate parralel login requests", 
+                                "type": "integer"
+                        }
+                }, 
+                "return": "string", 
+                "type": "method"
+        }, 
+        "user.secure_login": {
+                "description": "Secure login using challenge-response", 
+                "extra": {
+                        "users": [
+                                "ADMIN_USER"
+                        ]
+                }, 
+                "params": {
+                        "algo": {
+                                "default": "md5", 
+                                "description": "Algorithm to use for challenge response hash. Currently accepted: only md5, using salt of $1$", 
+                                "optional": true, 
+                                "type": "string"
+                        }, 
+                        "challenge_response": {
+                                "description": "Challenge response: hash(concat(server_challenge,pass_hash_md5)); using md5 with salt $1$ for pass hash and algo for response hash", 
+                                "type": "string"
+                        }, 
+                        "req_id": {
+                                "description": "Request ID, same value previously used with secure_challenge. Differentiate parralel login requests", 
+                                "type": "integer"
+                        }, 
+                        "user": {
+                                "description": "User name", 
+                                "maximum": 16, 
+                                "minimum": 8, 
+                                "type": "string"
+                        }
+                }, 
+                "return": "boolean", 
+                "type": "method"
+        }, 
+        "user.send_email": {
+                "description": "Reset the password then send an e-mail with user/password to the email configured in the gateway section", 
+                "extra": {
+                        "users": [
+                                "MAX_USER_ID"
+                        ]
+                }, 
+                "params": {
+                        "serialNo": {
+                                "description": "The serial number of the gateway", 
+                                "type": "string"
+                        }, 
+                        "userName": {
+                                "default": "admin", 
+                                "description": "The user whose credentials are sent via e-mail", 
+                                "optional": true, 
+                                "type": "string"
+                        }
+                }, 
+                "return": "boolean", 
+                "type": "method"
+        }, 
+        "user.update": {
+                "description": "Change the password for the specified user", 
+                "extra": {
+                        "users": [
+                                "ADMIN_USER"
+                        ]
+                }, 
+                "params": {
+                        "pass": {
+                                "description": "The new password of the currently logged user.", 
+                                "maximum": 16, 
+                                "minimum": 8, 
+                                "type": "string"
+                        }
+                }, 
+                "return": "boolean", 
+                "type": "method"
+        }
+}

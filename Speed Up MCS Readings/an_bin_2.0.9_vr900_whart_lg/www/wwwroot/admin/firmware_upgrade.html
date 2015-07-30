@@ -1,0 +1,112 @@
+<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 4.01 Transitional//EN" "http://www.w3.org/TR/html4/loose.dtd">
+
+<html>
+<head>
+	<meta http-equiv="Content-Type" content="text/html; charset=UTF-8">
+
+	<link href="css/default.css" rel="stylesheet" type="text/css"/>
+	<script type="text/javascript" src="../jsolait/jsolait.js"> </script>
+	<script type="text/javascript" src="config.js"></script>
+	
+	<script type="text/javascript">	
+		function InitFwUpgradePage(){
+			SetPageCommonElements();
+			InitJSON();
+			getVersion(true);
+		}
+
+		function getVersion( v_DoPrint ) {
+			try {
+				var service = new jsonrpc.ServiceProxy(serviceURL, methods);
+				var str_rsp = service.misc.getVersion( ) ;
+				if( v_DoPrint ){
+					document.getElementById('divCurrentVersion').innerHTML+=str_rsp ;
+				}
+				return str_rsp ;
+			} catch(e) {
+				HandleException(e, 'Error reading current version !')
+			}
+			return true ;
+		}
+
+		function startUpload () {
+			ClearOperationResult("operationStatus");
+			ToggleProgressOperation(true);
+			var v_DBReset=document.getElementById("dbReseset");
+			document.form1.call1.value = jsonrpc.JSONRPCMethod("a").jsonRequest(1,"misc.fileUpload", {script:"/access_node/firmware/web_upgrade.sh", scriptParams: ( v_DBReset.checked )?"reset_db":""});
+			return 1 ;
+		}
+		
+		function check_version () {
+			var v_VersionNewFullPath=document.getElementById("figure2");
+			try {
+				var ver_old=getVersion( false );
+				var ver_new=v_VersionNewFullPath.value.replace(/.*an_bin_/,"").replace(/.*fw_bin_/,"");
+				document.getElementById("dbReseset").checked=( ver_new < ver_old );
+			} catch(e) { 
+				HandleException(e, 'Error checking version !')
+			}
+		}
+	</script>
+</head>
+
+<body onload="InitFwUpgradePage()">
+<div id="outer">
+<div id="inner">
+<div id="header"></div>
+<div id="content">
+<div id="columnB"></div>
+<div id="columnA">
+
+	<h3>Edge Router Firmware Upgrade</h3>	
+	<hr>	
+	<form id="form1" name="form1" action="/rpc.cgi" enctype="multipart/form-data" method="POST" target="iFrame">					
+		<table width="100%" border="0" cellspacing="5">			
+			<tr>
+				<td style="width: 190px">
+					<span id="spnCurrentVersion">Current version:</span>
+				</td>	
+				<td>
+					<div id="divCurrentVersion"/>
+				</td>
+			</tr>
+			<tr>
+				<td>
+					<span id="spnFirmwareFile">Path to firmware file:</span>
+				</td>
+				<td>
+					<div id="em">						
+						<input type='hidden' name='call1' id='call1'>
+						<input type='file' name='figure2' id='figure2' value='2'  size="40" onChange="javascript:check_version();">
+					</div>
+				</td>
+			</tr>
+			<tr>
+				<td>
+					<span id="spnResetDB">Reset DB (use with FW fallback)</span>
+				</td>
+				<td style="valign: middle;">
+					<input type="checkbox" id="dbReseset"/>
+					<input id="btnLoad" value="Load" type="submit" onClick="javascript:startUpload();" class="buttonFilter"/>
+				</td>
+			</tr>
+			<tr>
+				<td colspan="2" align="center">
+					<img id="operationStatusImg" src="images/loader_circle.gif" style="display:none">
+					<span id="operationStatus"></span>
+				</td>
+			</tr>
+		</table>						
+	</form >	
+	<hr>	
+	<div id="result" style="height:150px; overflow:auto;"></div>
+	<hr>	
+	<iframe src="about:blank" id="iFrame" name="iFrame"  style="display:none; visibility:hidden;"></iframe>
+	
+</div>
+</div>	
+</div>	
+</div>	
+<div id="footer"></div>	
+</body>
+</html>

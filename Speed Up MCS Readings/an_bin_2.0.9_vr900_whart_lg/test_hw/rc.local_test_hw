@@ -1,0 +1,97 @@
+#!/bin/sh
+# We don't really need the applet name here (/etc/rc launch us using .)
+# I put it here tough at least for syntax coloring sake
+# this script MUST terminate, because is started by /etc/rc, on sysinit
+# and zombies are sweeped only after sysinit ends
+#
+# DO NOT launch an interactive shell from this script, EXCEPT for debug
+#
+
+# we're called on shutdown
+if [ "$1" = "stop" ]; then
+        [ -f /access_node/etc/profile ] && . /access_node/etc/profile # LD_LIBRARY_PATH needed by log2flash
+        stop.sh
+        devmem 0xF0000800 16 0xFF30
+        devmem 0xF0000804 32 0xFFFF04f7 # MCF5485: set the prescaler and timer count
+        RET1=`devmem 0xF0000800 32`     # readback
+        RET2=`devmem 0xF0000804 32`     # readback
+        /access_node/firmware/log2flash "SHUTDOWN requested: $RET1 $RET2"
+        echo "SHUTDOWN requested: $RET1 $RET2"
+        usleep 100000
+        exit
+fi
+
+IN_PRODUCTION_STAGE="n"
+if [ -f /etc/config/hw_test_enabled ]; then
+        IN_PRODUCTION_STAGE="y"
+        stty erase ^H
+fi
+export IN_PRODUCTION_STAGE
+
+
+# We need /proc before inserting modules - at lease usb needs /proc/bus/usb
+mount -t proc proc /proc
+
+# Insert modules
+/etc/rc.d/rc.board
+
+#mount proc tmp dec sysfs usbfs
+mount -a
+
+#create directory structure expected in /var/
+mkdir -p /tmp/var/lock
+mkdir -p /tmp/var/log
+mkdir -p /tmp/var/run
+mkdir -p /tmp/var/spool/cron/crontabs
+
+#load PATH, LD_LIBRARY_PATH, aliases
+[ -f /access_node/etc/profile ] && . /access_node/etc/profile
+
+#rc.net which call the dhcp client which needs af_packet. af_packet included in kernel
+#insmod /lib/modules/2.6.25.20/kernel/net/packet/af_packet.ko
+
+#this must go before all
+if [ "${IN_PRODUCTION_STAGE}" = "y" ]; then
+        /bin/hostname An_test_hw
+fi
+/etc/rc.net
+
+#print the ip adress
+/sbin/ifconfig
+
+/sbin/syslogd
+/sbin/klogd
+#if [ -f /usr/sbin/dropbear ]; then
+        /usr/sbin/dropbear
+#else
+        /usr/sbin/telnetd
+#fi
+
+# Test the presence of hardware version file.
+# It must be present, otherwise an assumption will be made
+#TODO: log to activity log
+[ -f /access_node/etc/hw_version ] \
+    && echo "This board HW version is `cat etc/hw_version`" \
+    || echo "ERROR /access_node/etc/hw_version not found"
+
+#DEBUG /access_node/etc/rc.d/rc.rtc             #restore clock from RTC
+#DEBUG /access_node/etc/rc.d/rc.initserials #before LED blink
+#DEBUG /access_node/etc/rc.d/rc.initmodem #before LED blink
+#DEBUG /access_node/etc/rc.d/rc.ledblink
+#DEBUG /access_node/etc/rc.d/rc.iptables
+
+cd /access_node/firmware/
+
+
+
+#production script only
+if [ -d test_hw -a "${IN_PRODUCTION_STAGE}" = "y" ] ; then
+        #board_setup.sh -a
+		cd test_hw 
+		test_hw.sh 
+        /bin/sh
+else
+    #client-dependent script. It must terminate.
+    #the script should be in /access_node/firmware/; if is not there, try in /access_node/
+[ -f /access_node/firmware/rc.nivis ] && /access_node/firmware/rc.nivis || /access_node/rc.nivis
+fi

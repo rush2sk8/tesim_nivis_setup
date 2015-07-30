@@ -1,0 +1,10 @@
+#!/bin/sh
+
+STATUS=1
+COUNT=0
+until [ $STATUS -eq 0 -o $COUNT -eq 10 ]; do
+        COUNT=$(($COUNT+1))
+        /bin/sh -c "busybox $0 $*"
+        STATUS=$?
+        [ $STATUS -ne 0 ] && log2flash "devmem fail $COUNT"
+done

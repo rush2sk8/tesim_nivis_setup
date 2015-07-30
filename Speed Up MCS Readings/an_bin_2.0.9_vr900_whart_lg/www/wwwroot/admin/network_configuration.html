@@ -1,0 +1,544 @@
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Strict//EN"   "http://www.w3.org/TR/xhtml1/DTD/xhtml1-strict.dtd">
+
+<html>
+<head>
+  <meta http-equiv="content-type" content="text/html; charset=us-ascii" />
+  <!--meta http-equiv="X-UA-Compatible" content="IE=EmulateIE7" /-->
+
+  <link href="css/default.css" rel="stylesheet" type="text/css" />
+	<script type="text/javascript" src="../jsolait/jsolait.js"> </script>
+  <script type="text/javascript" src="config.js"></script>
+
+  <script type="text/javascript">
+	function ReadConfig(){
+
+		try
+		{
+			var service = new jsonrpc.ServiceProxy(serviceURL, methods);
+			CONFIG = service.config.getConfig({});
+		}
+		catch(e)
+		{
+			HandleException(e, "Unexpected error reading config !");
+		}
+	}
+
+	function InitAdvancedPage(){
+		SetPageCommonElements();
+		InitJSON();
+		var txtNameServer = document.getElementById("txtNameServer");
+		txtNameServer.value = "";
+		var lstNameServers = document.getElementById("lstNameServers");
+		lstNameServers.options[0] = null;
+		var textMac = document.getElementById("txtMAC");
+		textMac.disabled = true;
+		var textMac1 = document.getElementById("txtMACeth1");
+		textMac1.disabled = true;
+		var txtNTPServer = document.getElementById("txtNTPServer");
+		txtNTPServer.value = "";
+		var lstNTPServers = document.getElementById("lstNTPServers");
+		lstNTPServers.options[0] = null;
+		GetSettings();
+	}
+
+	function GetSettings(){
+		ClearOperationResults();
+
+		document.getElementById("txtNameServer").value  = "";
+		document.getElementById("txtNTPServer").value   = "";
+
+		var ip          = document.getElementById("txtIP");
+		var gateway     = document.getElementById("txtGateway");
+		var mask        = document.getElementById("txtMask");
+		var mac0        = document.getElementById("txtMAC");
+		var mac1        = document.getElementById("txtMACeth1");
+		var dhcpEnabled = document.getElementById("updDHCP");
+		var nameServers = document.getElementById("lstNameServers");
+		var ntpServers  = document.getElementById("lstNTPServers");
+		var service     = new jsonrpc.ServiceProxy(serviceURL, methods);
+
+		try  {
+			var result0 = service.misc.getGatewayNetworkInfo();
+			ip.value = result0.ip;
+			gateway.value = result0.defgw;
+			mask.value = result0.mask;
+			mac0.value = result0.mac0;
+			mac1.value = result0.mac1;
+			dhcpEnabled.checked = result0.dhcpEnabled;
+			for(i=0; i<result0.nameservers.length; i++)
+			{
+				nameServers.options[i] = new Option(result0.nameservers[i], result0.nameservers[i]);
+			};
+			var result1 = service.misc.getNtpServers();
+			for(i=0; i<result1.servers.length; i++)
+			{
+				ntpServers.options[i] = new Option(result1.servers[i], result1.servers[i]);
+			};
+		}
+		catch(e)
+		{
+			HandleException(e, "Unexpected error reading settings !");
+		};
+	}
+
+	function ValidateRequired(control, fieldName){
+		if (control.value == null || control.value == "")
+		{
+			alert("Field '" + fieldName + "' is required !");
+			control.focus();
+			return false;
+		}
+		return true;
+	}
+
+	function SelectNameServer(){
+		var lstNameServers = document.getElementById("lstNameServers");
+		var txtNameServer = document.getElementById("txtNameServer");
+
+		txtNameServer.value  = lstNameServers.options[lstNameServers.selectedIndex].value;
+	}
+
+	function SelectNTPServer(){
+		var lstNTPServers = document.getElementById("lstNTPServers");
+		var txtNTPServer = document.getElementById("txtNTPServer");
+
+		txtNTPServer.value  = lstNTPServers.options[lstNTPServers.selectedIndex].value;
+	}
+
+	function SaveServerName(){
+	
+
+		var lstNameServers = document.getElementById("lstNameServers");
+		var txtNameServer = document.getElementById("txtNameServer");
+
+		if  ((ValidateIP(txtNameServer,'Name Server', true, false)) && (ElementIndex(txtNameServer.value,"lstNameServers") == -1)){
+			lstNameServers.options[lstNameServers.length] = new Option(txtNameServer.value, txtNameServer.value);
+			txtNameServer.value = "";
+		}
+	}
+
+	function SaveNTPServer(){
+		var lstNTPServers = document.getElementById("lstNTPServers");
+		var txtNTPServer = document.getElementById("txtNTPServer");
+
+		if  (ValidateIP(txtNTPServer,'NTP Server', true, true) && ElementIndex(txtNTPServer.value,"lstNTPServers") == -1){
+			lstNTPServers.options[lstNTPServers.length] = new Option(txtNTPServer.value, txtNTPServer.value);
+			txtNTPServer.value = ""
+		}
+	}
+
+	function DeleteServerName(){
+		var lstNameServers = document.getElementById("lstNameServers");
+		var txtNameServer = document.getElementById("txtNameServer");
+		var indexToDelete = ElementIndex(txtNameServer.value,"lstNameServers");
+
+		if (indexToDelete != -1)
+		{
+			lstNameServers.options[indexToDelete] = null;
+			txtNameServer.value = ""
+		};
+	}
+
+	function DeleteNTPServer(){
+		var lstNTPServers = document.getElementById("lstNTPServers");
+		var txtNTPServer = document.getElementById("txtNTPServer");
+		var indexToDelete = ElementIndex(txtNTPServer.value,"lstNTPServers");
+
+		if (indexToDelete != -1)
+		{
+			lstNTPServers.options[indexToDelete] = null;
+			txtNTPServer.value = ""
+		};
+	}
+
+	function SetVR900Settings(){
+
+		ClearOperationResults();
+
+		if (ValidateVR900()) {
+			var ip = document.getElementById("txtIP");
+			var gateway = document.getElementById("txtGateway");
+			var mask = document.getElementById("txtMask");
+			var mac = document.getElementById("txtMAC");
+			var mac1 = document.getElementById("txtMACeth1");
+			var update_mac = document.getElementById("updMAC");
+			var dhcpEnabled = document.getElementById("updDHCP");
+			var nameServers = document.getElementById("lstNameServers");
+			var nameServersArray = Array();
+			var ntpServers = document.getElementById("lstNTPServers");
+			var ntpServersArray = Array();
+
+			for (i=0; i<nameServers.length; i++){
+				nameServersArray.push(nameServers[i].value);
+			};
+
+			for (i=0; i<ntpServers.length; i++){
+				ntpServersArray.push(ntpServers[i].value);
+			};
+
+			try  {
+				var service = new jsonrpc.ServiceProxy(serviceURL, methods);
+				var result0 = service.misc.setGatewayNetworkInfo({defgw : gateway.value, ip : ip.value, mask : mask.value, mac0 : mac.value, mac1 : mac1.value, dhcpEnabled : dhcpEnabled.checked, nameservers : nameServersArray , updateMAC : update_mac.checked});
+				var result1 = service.misc.setNtpServers({servers : ntpServersArray });
+				
+				if (result0 && result1) {
+					DisplayOperationResult("spnOperationResult","Save completed successfully.");
+				} else {
+					alert("Error saving VR900 Settings !");
+					GetSettings();
+				}
+
+			} catch(e) {
+				if (e.message == "ValidationError") {
+					alert("Invalid input !");
+				} else {
+					HandleException(e, "Unexpected error saving values !");
+				}
+			}
+		}
+	}
+
+	//verify if there is any element with the value val in the lstNameServers component
+	//if found  then the index of the element will be returned
+	//          else return -1    
+	function ElementIndex(val, list){
+
+		var lst = document.getElementById(list);
+
+		for(i=0; i<lst.length; i++){
+			if (lst.options[i].value == val){
+				return i;
+			};
+		};
+		return -1;
+	}
+
+	function ValidateVR900(){
+		var ip = document.getElementById("txtIP");
+		var gateway = document.getElementById("txtGateway");
+		var mask = document.getElementById("txtMask");
+		var mac = document.getElementById("txtMAC");
+		var mac1 = document.getElementById("txtMACeth1");
+
+		if(!ValidateMAC(mac, "MAC0"))
+		{
+			return false;
+		}
+		if(!ValidateMAC(mac1, "MAC1"))
+		{
+			return false;
+		}
+		if(!ValidateRequired(ip, "IP") || (!ValidateIP(ip, "IP", true, false))) {
+
+			return false;
+		}
+		if(!ValidateRequired(gateway, "Gateway") || (!ValidateIP(gateway, "Gateway", true, false))) {
+
+			return false;
+		}
+		if(!ValidateRequired(mask, "Mask") || (!ValidateIP(mask, "Mask", true, false))) {
+
+			return false;
+		}
+		return true;
+	}
+
+	function ValidateMAC(control, fieldName){
+		var result = false;
+		var rxMAC = /^[0-9a-fA-F]{12}$/;
+		var inputString = control.value;
+
+		if (inputString == null || inputString == "" || control.disabled == true)
+		return true; // Empty string is a valid value (means reset to default)
+
+		result = rxMAC.test(inputString);
+		if (!result)
+		{
+			alert("Field '" + fieldName + "' is invalid!");
+			control.focus();
+		}
+		return result;
+	}
+
+	/*  validateAsIP    - must be true when the control's value will be validated as numeric IP ex: (10.16.0.26)
+			- otherwise must be false
+			validateAsHost  - must be true when the control's value will be validated as host IP ex: (yahoo.com)
+			- otherwise must be false
+	 */
+
+	function ValidateIP(control, fieldName, validateAsIP, validateAsHost){
+
+		var inputString = control.value;
+		var rxIP   = /^(([0-9]|[1-9][0-9]|1[0-9]{2}|2[0-4][0-9]|25[0-5])\.){3}([0-9]|[1-9][0-9]|1[0-9]{2}|2[0-4][0-9]|25[0-5])$/
+		var rxHost = /^(([a-zA-Z0-9]|[a-zA-Z0-9][a-zA-Z0-9\-]*[a-zA-Z0-9])\.)*([A-Za-z]|[A-Za-z][A-Za-z0-9\-]*[A-Za-z0-9])$/
+		var result = false;
+
+		if (validateAsIP && rxIP.test(inputString)){
+			result = true;
+		};
+
+		if (validateAsHost && rxHost.test(inputString)){
+			result = true;
+		};
+
+		if (!result) {
+			alert("Field '" + fieldName + "' is invalid!");
+			control.focus();
+		}
+		return result;
+	}
+
+	function DisplayOperationResult(controlName, msg){
+
+		var control = document.getElementById(controlName);
+		control.className = "opResultGreen";
+		control.innerHTML = msg;
+
+	}
+
+	function ClearOperationResults(){
+		ClearOperationResult("spnOperationResult");
+		ClearOperationResult("spnRestartResult");
+	}
+
+	function ClearOperationResult(controlName){ //to do, mai elegant
+
+				DisplayOperationResult(controlName, "");
+				var control = document.getElementById(controlName);
+				control.className = "";
+	}
+
+	function changeMacEdit(){
+		var checkBox = document.getElementById("updMAC");
+		var textMac = document.getElementById("txtMAC");
+		var textMac1 = document.getElementById("txtMACeth1");
+
+		if (checkBox.checked)
+		{
+			textMac.disabled = false;
+			textMac1.disabled = false;
+		}
+		else
+		{
+			textMac.disabled = true;
+			textMac1.disabled = true;
+		}
+	}
+
+	function SoftRestart(){
+
+		ClearOperationResults();
+
+		if (confirm ("Are you sure you want to execute Restart Applications ?"))
+		{
+			try {
+				var service = new jsonrpc.ServiceProxy(serviceURL, methods);
+				service.misc.softwareReset();
+			} catch(e) {
+					HandleException(e, "Error restarting Applications !");
+					return;
+			}
+			DisplayOperationResult("spnRestartResult", "Restart sent successfully.");
+		}
+	}
+
+	function HardRestart(){
+
+	ClearOperationResults();
+
+	if (confirm ("Are you sure you want to execute Hardware Restart ?"))
+	{
+		try
+		{
+			var service = new jsonrpc.ServiceProxy(serviceURL, methods);
+           service.misc.hardReset();
+		} catch(e) {
+			   HandleException(e, "Error restarting !");
+			   return;
+		}
+		DisplayOperationResult("spnRestartResult", "Restart sent successfully.");
+	}
+}
+	</script>
+</head>
+
+<body onload="InitAdvancedPage()">
+<div id="outer">
+<div id="inner">
+<div id="header"></div>
+<div id="content">
+<div id="columnB"></div>
+<div id="columnA">
+
+	<h3>Network Configuration</h3>
+	
+	<hr>
+
+	<table cellpadding="0" cellspacing="5" border="0" style="padding-left:10px" width="100%">	
+		<tr>
+			<td align="left" style="width:135px">IP</td>
+			<td align="left">
+				<input type="text" id="txtIP" maxlength="50" />
+			</td>
+		</tr>
+		
+		<tr>
+			<td align="left">Gateway</td>
+			<td align="left">
+				<input type="text" id="txtGateway" maxlength="50" />
+			</td>
+		</tr>
+
+		<tr>
+			<td align="left">Mask</td>
+			<td align="left">
+				<input type="text" id="txtMask" maxlength="50" />
+			</td>
+		</tr>
+	
+		<tr>
+			<td align="left">MAC0</td>
+			<td align="left">
+				<input type="text" id="txtMAC" maxlength="12" />
+				<input type="checkbox" id="updMAC" onclick="changeMacEdit()"/>Update MAC
+			</td>
+		</tr>
+
+		<tr>	
+			<td align="left">MAC1</td>
+			<td align="left">
+				<input type="text" id="txtMACeth1" maxlength="12" />
+			</td>
+		</tr>
+		
+		<tr>	
+			<td align="left">DHCP Enabled</td>
+			<td align="left">
+				<input type="checkbox" id="updDHCP"/>
+			</td>
+		</tr>
+		
+		<tr>
+			<td class="spacer" colspan="2"></td>
+		</tr>
+
+		<tr valign="top">
+			<td align="left">Name Servers</td>
+			<td>
+				<table cellpadding="0" cellspacing="0" >
+					<tr>
+						<td>
+							<select id="lstNameServers" size="3"  onchange="SelectNameServer()" style="width:154px"> <option /> </select>
+						</td>
+						<td>
+							<input type="button" id="btnDeleteNameServer" value='Delete' class="buttonSimple" onclick="DeleteServerName();"/>
+						</td>
+					</tr>
+					<tr>
+						<td>
+							<input type="text" id="txtNameServer" maxlength="15" />
+						</td>
+						<td>
+							<input type="button" id="btnSaveNameServer" value='Add' class="buttonSimple" onclick="SaveServerName();" />
+						</td>
+					</tr>
+				</table>
+			</td>
+		</tr>
+	
+		<tr>
+			<td class="spacer" colspan="2"></td>
+		</tr>
+	
+		<tr valign="top">
+			<td align="left">NTP Servers</td>
+			<td>
+				<table cellpadding="0" cellspacing="0" border="0">
+					<tr >
+						<td>
+							<select id="lstNTPServers" size="3"  onchange="SelectNTPServer()" style="width:154px"> <option /> </select>
+						</td>
+						<td>
+							<input type="button" id="btnDeleteNTPServer" value='Delete' class="buttonSimple" onclick="DeleteNTPServer();"/>
+						</td>
+					</tr>
+					<tr>
+						<td>
+							<input type="text" id="txtNTPServer" maxlength="15" />
+						</td>
+						<td>
+							<input type="button" id="btnSaveNTPServer" value='Add' class="buttonSimple" onclick="SaveNTPServer();" />
+						</td>
+					</tr>
+				</table>
+			</td>
+		</tr>
+			
+		<tr>
+			<td colspan="2" >
+				<table width="100%" cellpadding="0" cellspacing="5" border="0">
+					<tr>
+						<td style="width:115px">
+						<td align="left">
+							<input type="button" id="btnSaveGateway" value='Save' class="button" onclick="SetVR900Settings();" onblur="ClearOperationResults();" />
+							<input type="button" id="btnCancelGateway" value='Cancel' class="button" onclick="GetSettings();" />
+						</td>
+					</tr>
+				</table>
+			</td>
+		</tr>
+		
+		<tr>
+			<td colspan="2" align="center">
+				<span id="spnOperationResult"></span>
+			</td>
+		</tr>
+	</table>
+	
+	<table width="100%">	
+		<tr>
+			<td align="left" style="font-size :9px;">	
+				*The board must be restarted for the new settings to take effect. If the IP address is changed,
+				after reset the board will be accessible with the new IP and will no longer be reachable at the previous IP.
+			</td>
+		</tr>	
+		<tr>
+			<td><hr></td>
+		</tr>
+	</table>	
+	
+	<table cellpadding="0" cellspacing="5" border="0" width="100%">	
+		<tr>
+			<td align="right">Soft Restart &nbsp;</td>
+			<td align="left">
+				<input type="button" id="btnSoftRestart" value='Restart' class="buttonRestart" onclick="SoftRestart();" onblur="ClearOperationResults()" />
+			</td>
+		
+			<td align="right">Hard Restart &nbsp;</td>
+			<td align="left">
+				<input type="button" id="btnHardRestart" value='Restart' class="buttonRestart" onclick="HardRestart();" onblur="ClearOperationResults()" />
+			</td>
+		</tr>
+			
+		<tr>
+			<td colspan="4" align="center">
+				<span id="spnRestartResult"></span>
+			</td>
+		</tr>
+	
+		<tr>
+			<td align="left" colspan="4" style="font-size :9px;">
+			*After a restart the VR900 Monitoring Control System becomes inoperable for a few minutes.
+			</td>
+		</tr>
+	</table>
+
+	<hr>	
+	
+</div>
+</div>
+</div>	
+</div>
+<div id="footer"></div>
+</body>
+</html>
